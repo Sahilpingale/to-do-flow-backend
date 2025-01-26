@@ -22,8 +22,8 @@ export default [
     rules: {
       ...jsPlugin.configs.recommended.rules,
       ...tsPlugin.configs.recommended.rules,
-      // no console
       "no-console": ["warn", { allow: ["warn", "error"] }],
+      node: true,
     },
   },
 ]
