@@ -52,8 +52,6 @@ export const editProject = async (
   }
 ) => {
   try {
-    console.log("editProject", id, data)
-
     const project = await prisma.project.findUnique({
       where: { id },
     })
