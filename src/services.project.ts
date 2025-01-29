@@ -122,13 +122,10 @@ export const editProject = async (
           )
         : []
 
-    console.log("nodesToRemove", nodesToRemove)
-
     const edgesToAdd =
       data.edgesToAdd && data.edgesToAdd.length > 0
         ? await Promise.all(
             data.edgesToAdd.map(async (edge) => {
-              console.log("i ran")
               // Verify if edge already exists for a Project and source and target
               const existingEdge = await prisma.taskEdge.findFirst({
                 where: {
@@ -136,8 +133,6 @@ export const editProject = async (
                   target: edge.target,
                 },
               })
-
-              console.log("existingEdge", existingEdge)
 
               if (existingEdge) {
                 throw new Error(
@@ -182,8 +177,6 @@ export const editProject = async (
           )
         : []
 
-    console.log("edgesToRemove", edgesToRemove)
-
     const updatedProject = await prisma.project.update({
       where: { id },
       data: {
@@ -196,6 +189,14 @@ export const editProject = async (
           update: nodesToUpdate,
           delete: nodesToRemove,
         },
+      },
+      select: {
+        id: true,
+        name: true,
+        edges: true,
+        nodes: true,
+        createdAt: true,
+        updatedAt: true,
       },
     })
 
