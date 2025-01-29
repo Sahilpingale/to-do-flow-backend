@@ -11,25 +11,144 @@
     }
   ],
   "paths": {
-    "/api/example1": {
+    "/projects": {
+      "post": {
+        "summary": "Create a new project",
+        "description": "Creates a new project with the given name.",
+        "tags": ["Projects"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Name of the project"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Project created successfully"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
       "get": {
-        "summary": "Example endpoint",
-        "description": "Returns a simple example response",
+        "summary": "Get all projects",
+        "description": "Retrieves a list of all projects with their associated nodes and edges.",
+        "tags": ["Projects"],
         "responses": {
           "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
+            "description": "A list of projects"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/projects/{id}": {
+      "get": {
+        "summary": "Get a project by ID",
+        "description": "Retrieves a project with its nodes and edges by ID.",
+        "tags": ["Projects"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The project ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project details"
+          },
+          "404": {
+            "description": "Project not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Edit a project",
+        "description": "Updates the project's nodes and edges.",
+        "tags": ["Projects"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The project ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nodesToUpdate": {
+                    "type": "array",
+                    "items": {
+                      "type": "object"
+                    }
+                  },
+                  "nodesToAdd": {
+                    "type": "array",
+                    "items": {
+                      "type": "object"
+                    }
+                  },
+                  "nodesToRemove": {
+                    "type": "array",
+                    "items": {
+                      "type": "object"
+                    }
+                  },
+                  "edgesToAdd": {
+                    "type": "array",
+                    "items": {
+                      "type": "object"
+                    }
+                  },
+                  "edgesToRemove": {
+                    "type": "array",
+                    "items": {
+                      "type": "object"
                     }
                   }
                 }
               }
             }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Project updated successfully"
+          },
+          "404": {
+            "description": "Project not found"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         }
       }
