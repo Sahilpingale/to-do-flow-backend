@@ -10,17 +10,17 @@ WORKDIR /usr/src/app
 # Copy package files
 COPY package*.json ./
 
-# Install ALL dependencies
+# Install dependencies
 RUN npm install
 
-# Copy prisma schema
-COPY prisma ./prisma/
+# Copy the rest of the source code
+COPY . .
 
 # Generate Prisma Client
 RUN npx prisma generate
 
-# Copy the rest of the source code
-COPY . .
+# Copy prisma schema
+COPY prisma ./prisma/
 
 # Build TypeScript code
 RUN npm run build
