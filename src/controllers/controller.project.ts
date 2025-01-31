@@ -3,6 +3,70 @@ import * as projectService from "../services/services.project"
 
 /**
  * @swagger
+ * components:
+ *   schemas:
+ *     Project:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           description: Unique identifier for the project
+ *         name:
+ *           type: string
+ *           description: Name of the project
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
+ *         nodes:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/TaskNode'
+ *         edges:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/TaskEdge'
+ *     TaskNode:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *         title:
+ *           type: string
+ *         description:
+ *           type: string
+ *         status:
+ *           type: string
+ *           enum: [TODO, IN_PROGRESS, DONE]
+ *         positionX:
+ *           type: number
+ *         positionY:
+ *           type: number
+ *         type:
+ *           type: string
+ *     TaskEdge:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *         source:
+ *           type: string
+ *         target:
+ *           type: string
+ *         type:
+ *           type: string
+ *         animated:
+ *           type: boolean
+ *         deletable:
+ *           type: boolean
+ *         reconnectable:
+ *           type: boolean
+ */
+
+/**
+ * @swagger
  * /projects:
  *   post:
  *     summary: Create a new project
@@ -21,10 +85,14 @@ import * as projectService from "../services/services.project"
  *     responses:
  *       201:
  *         description: Project created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Project'
  *       500:
  *         description: Internal server error
  */
-export const createProject = async (req: Request, res: Response) => {
+export const createNewProject = async (req: Request, res: Response) => {
   try {
     const project = await projectService.createProject(req.body)
     res.status(201).json(project)
@@ -43,10 +111,16 @@ export const createProject = async (req: Request, res: Response) => {
  *     responses:
  *       200:
  *         description: A list of projects
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Project'
  *       500:
  *         description: Internal server error
  */
-export const getProjects: RequestHandler = async (req, res) => {
+export const fetchAllProjects: RequestHandler = async (req, res) => {
   try {
     const projects = await projectService.getProjects()
     res.json(projects)
@@ -72,12 +146,16 @@ export const getProjects: RequestHandler = async (req, res) => {
  *     responses:
  *       200:
  *         description: Project details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Project'
  *       404:
  *         description: Project not found
  *       500:
  *         description: Internal server error
  */
-export const getProjectById: RequestHandler = async (req, res) => {
+export const fetchProjectById: RequestHandler = async (req, res) => {
   try {
     const project = await projectService.getProjectById(req.params.id)
     if (!project) {
@@ -94,7 +172,7 @@ export const getProjectById: RequestHandler = async (req, res) => {
  * /projects/{id}:
  *   patch:
  *     summary: Edit a project
- *     description: Updates the project's nodes and edges.
+ *     description: Updates a project's nodes and edges.
  *     tags: [Projects]
  *     parameters:
  *       - in: path
@@ -113,32 +191,36 @@ export const getProjectById: RequestHandler = async (req, res) => {
  *               nodesToUpdate:
  *                 type: array
  *                 items:
- *                   type: object
+ *                   $ref: '#/components/schemas/TaskNode'
  *               nodesToAdd:
  *                 type: array
  *                 items:
- *                   type: object
+ *                   $ref: '#/components/schemas/TaskNode'
  *               nodesToRemove:
  *                 type: array
  *                 items:
- *                   type: object
+ *                   type: string
  *               edgesToAdd:
  *                 type: array
  *                 items:
- *                   type: object
+ *                   $ref: '#/components/schemas/TaskEdge'
  *               edgesToRemove:
  *                 type: array
  *                 items:
- *                   type: object
+ *                   type: string
  *     responses:
  *       200:
  *         description: Project updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Project'
  *       404:
  *         description: Project not found
  *       500:
  *         description: Internal server error
  */
-export const editProject: RequestHandler = async (req, res) => {
+export const updateProjectDetails: RequestHandler = async (req, res) => {
   try {
     const updatedProject = await projectService.editProject(
       req.params.id,
@@ -148,6 +230,36 @@ export const editProject: RequestHandler = async (req, res) => {
       return void res.status(404).json({ error: "Project not found" })
     }
     res.json(updatedProject)
+  } catch (error) {
+    res.status(500).json({ error: (error as Error).message })
+  }
+}
+
+/**
+ * @swagger
+ * /projects/{id}:
+ *   delete:
+ *     summary: Delete a project
+ *     description: Deletes a project by ID.
+ *     tags: [Projects]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       204:
+ *         description: Project deleted successfully
+ *       500:
+ *         description: Internal server error
+ *       404:
+ *         description: Project not found
+ */
+export const deleteProject = async (req: Request, res: Response) => {
+  try {
+    await projectService.deleteProject(req.params.id)
+    res.status(204).send()
   } catch (error) {
     res.status(500).json({ error: (error as Error).message })
   }

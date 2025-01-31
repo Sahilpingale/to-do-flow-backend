@@ -15,7 +15,9 @@
       "post": {
         "summary": "Create a new project",
         "description": "Creates a new project with the given name.",
-        "tags": ["Projects"],
+        "tags": [
+          "Projects"
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -34,7 +36,14 @@
         },
         "responses": {
           "201": {
-            "description": "Project created successfully"
+            "description": "Project created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
           },
           "500": {
             "description": "Internal server error"
@@ -44,10 +53,22 @@
       "get": {
         "summary": "Get all projects",
         "description": "Retrieves a list of all projects with their associated nodes and edges.",
-        "tags": ["Projects"],
+        "tags": [
+          "Projects"
+        ],
         "responses": {
           "200": {
-            "description": "A list of projects"
+            "description": "A list of projects",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Project"
+                  }
+                }
+              }
+            }
           },
           "500": {
             "description": "Internal server error"
@@ -59,7 +80,9 @@
       "get": {
         "summary": "Get a project by ID",
         "description": "Retrieves a project with its nodes and edges by ID.",
-        "tags": ["Projects"],
+        "tags": [
+          "Projects"
+        ],
         "parameters": [
           {
             "in": "path",
@@ -73,7 +96,14 @@
         ],
         "responses": {
           "200": {
-            "description": "Project details"
+            "description": "Project details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
           },
           "404": {
             "description": "Project not found"
@@ -85,8 +115,10 @@
       },
       "patch": {
         "summary": "Edit a project",
-        "description": "Updates the project's nodes and edges.",
-        "tags": ["Projects"],
+        "description": "Updates a project's nodes and edges.",
+        "tags": [
+          "Projects"
+        ],
         "parameters": [
           {
             "in": "path",
@@ -108,31 +140,31 @@
                   "nodesToUpdate": {
                     "type": "array",
                     "items": {
-                      "type": "object"
+                      "$ref": "#/components/schemas/TaskNode"
                     }
                   },
                   "nodesToAdd": {
                     "type": "array",
                     "items": {
-                      "type": "object"
+                      "$ref": "#/components/schemas/TaskNode"
                     }
                   },
                   "nodesToRemove": {
                     "type": "array",
                     "items": {
-                      "type": "object"
+                      "type": "string"
                     }
                   },
                   "edgesToAdd": {
                     "type": "array",
                     "items": {
-                      "type": "object"
+                      "$ref": "#/components/schemas/TaskEdge"
                     }
                   },
                   "edgesToRemove": {
                     "type": "array",
                     "items": {
-                      "type": "object"
+                      "type": "string"
                     }
                   }
                 }
@@ -142,7 +174,42 @@
         },
         "responses": {
           "200": {
-            "description": "Project updated successfully"
+            "description": "Project updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a project",
+        "description": "Deletes a project by ID.",
+        "tags": [
+          "Projects"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Project deleted successfully"
           },
           "404": {
             "description": "Project not found"
@@ -154,6 +221,99 @@
       }
     }
   },
-  "components": {},
+  "components": {
+    "schemas": {
+      "Project": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the project"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the project"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "nodes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TaskNode"
+            }
+          },
+          "edges": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TaskEdge"
+            }
+          }
+        }
+      },
+      "TaskNode": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "TODO",
+              "IN_PROGRESS",
+              "DONE"
+            ]
+          },
+          "positionX": {
+            "type": "number"
+          },
+          "positionY": {
+            "type": "number"
+          },
+          "type": {
+            "type": "string"
+          }
+        }
+      },
+      "TaskEdge": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "animated": {
+            "type": "boolean"
+          },
+          "deletable": {
+            "type": "boolean"
+          },
+          "reconnectable": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  },
   "tags": []
 }

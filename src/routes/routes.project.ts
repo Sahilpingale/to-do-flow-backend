@@ -1,16 +1,18 @@
 import express from "express"
 import {
-  createProject,
-  editProject,
-  getProjectById,
-  getProjects,
+  createNewProject,
+  updateProjectDetails,
+  fetchProjectById,
+  fetchAllProjects,
+  deleteProject,
 } from "../controllers/controller.project"
 
 const projectRoutes = express.Router()
 
-projectRoutes.post("/", createProject)
-projectRoutes.get("/", getProjects)
-projectRoutes.get("/:id", getProjectById)
-projectRoutes.patch("/:id", editProject)
+projectRoutes.post("/", createNewProject)
+projectRoutes.get("/", fetchAllProjects)
+projectRoutes.get("/:id", fetchProjectById)
+projectRoutes.patch("/:id", updateProjectDetails)
+projectRoutes.delete("/:id", deleteProject)
 
 export default projectRoutes
