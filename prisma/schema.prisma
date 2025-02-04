@@ -23,7 +23,7 @@ model TaskNode {
   status      TaskStatus
   positionX   Float
   positionY   Float
-  type        TaskNodeType
+  type        NodeType
   projectId   String
   project     Project   @relation(fields: [projectId], references: [id])
 }
@@ -32,7 +32,7 @@ model TaskEdge {
   id             String      @id 
   source         String      
   target         String     
-  type           TaskNodeType
+  type           NodeType
   animated       Boolean
   deletable      Boolean
   reconnectable  Boolean
@@ -46,6 +46,6 @@ enum TaskStatus {
   DONE
 }
 
-enum TaskNodeType {
+enum NodeType {
   TASK
 }

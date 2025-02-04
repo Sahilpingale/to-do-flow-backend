@@ -5,6 +5,12 @@ import * as projectService from "../services/services.project"
  * @swagger
  * components:
  *   schemas:
+ *     NodeType:
+ *       type: string
+ *       enum: [TASK]
+ *     TaskStatus:
+ *       type: string
+ *       enum: [TODO, IN_PROGRESS, DONE]
  *     Project:
  *       type: object
  *       properties:
@@ -33,19 +39,24 @@ import * as projectService from "../services/services.project"
  *       properties:
  *         id:
  *           type: string
- *         title:
- *           type: string
- *         description:
- *           type: string
- *         status:
- *           type: string
- *           enum: [TODO, IN_PROGRESS, DONE]
- *         positionX:
- *           type: number
- *         positionY:
- *           type: number
+ *         data:
+ *           type: object
+ *           properties:
+ *             title:
+ *               type: string
+ *             description:
+ *               type: string
+ *             status:
+ *               $ref: '#/components/schemas/TaskStatus'
+ *         position:
+ *           type: object
+ *           properties:
+ *             x:
+ *               type: number
+ *             y:
+ *               type: number
  *         type:
- *           type: string
+ *           $ref: '#/components/schemas/NodeType'
  *     TaskEdge:
  *       type: object
  *       properties:
@@ -56,7 +67,7 @@ import * as projectService from "../services/services.project"
  *         target:
  *           type: string
  *         type:
- *           type: string
+ *           $ref: '#/components/schemas/NodeType'
  *         animated:
  *           type: boolean
  *         deletable:
@@ -191,23 +202,54 @@ export const fetchProjectById: RequestHandler = async (req, res) => {
  *               nodesToUpdate:
  *                 type: array
  *                 items:
- *                   $ref: '#/components/schemas/TaskNode'
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     data:
+ *                       type: object
+ *                     position:
+ *                       type: object
+ *                     type:
+ *                       type: string
  *               nodesToAdd:
  *                 type: array
  *                 items:
- *                   $ref: '#/components/schemas/TaskNode'
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     data:
+ *                       type: object
+ *                     position:
+ *                       type: object
+ *                     type:
+ *                       type: string
  *               nodesToRemove:
  *                 type: array
  *                 items:
- *                   type: string
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
  *               edgesToAdd:
  *                 type: array
  *                 items:
- *                   $ref: '#/components/schemas/TaskEdge'
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     source:
+ *                       type: string
+ *                     target:
+ *                       type: string
  *               edgesToRemove:
  *                 type: array
  *                 items:
- *                   type: string
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
  *     responses:
  *       200:
  *         description: Project updated successfully

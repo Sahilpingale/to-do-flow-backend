@@ -1,5 +1,6 @@
-import { PrismaClient } from "@prisma/client"
-import { TaskStatus, TaskNodeType } from "@prisma/client"
+import { PrismaClient, TaskEdge } from "@prisma/client"
+import { TaskStatus, NodeType } from "@prisma/client"
+import { IProject, TaskNode } from "../models/models"
 
 const prisma = new PrismaClient()
 
@@ -18,37 +19,58 @@ export const getProjects = async () => {
   })
 }
 
-export const getProjectById = async (id: string) => {
-  return prisma.project.findUnique({
+export const getProjectById = async (id: string): Promise<IProject | null> => {
+  const project = await prisma.project.findUnique({
     where: { id },
     include: {
       nodes: true,
       edges: true,
     },
   })
-}
-
-interface Node {
-  id: string
-  data: { description: string; status: TaskStatus; title: string }
-  position: { x: number; y: number }
-  type: TaskNodeType
-}
-
-interface Edge {
-  id: string
-  source: string
-  target: string
+  if (!project) {
+    return null
+  }
+  const modifiedProjectStructure: IProject = {
+    id: project?.id!,
+    name: project?.name!,
+    createdAt: project?.createdAt!,
+    updatedAt: project?.updatedAt!,
+    nodes:
+      project?.nodes.map((node) => ({
+        id: node.id,
+        data: {
+          title: node.title,
+          description: node.description,
+          status: node.status,
+        },
+        position: {
+          x: node.positionX,
+          y: node.positionY,
+        },
+        type: node.type,
+      })) ?? [],
+    edges:
+      project?.edges.map((edge) => ({
+        id: edge.id,
+        source: edge.source,
+        target: edge.target,
+        type: edge.type,
+        animated: edge.animated,
+        deletable: edge.deletable,
+        reconnectable: edge.reconnectable,
+      })) ?? [],
+  }
+  return modifiedProjectStructure
 }
 
 export const editProject = async (
   id: string,
   data: {
-    nodesToUpdate?: Pick<Node, "data" | "position" | "id" | "type">[]
-    nodesToAdd?: Pick<Node, "data" | "position" | "id" | "type">[]
-    nodesToRemove?: Pick<Node, "id">[]
-    edgesToAdd?: Pick<Edge, "source" | "target" | "id">[]
-    edgesToRemove?: Pick<Edge, "id">[]
+    nodesToUpdate?: Pick<TaskNode, "data" | "position" | "id" | "type">[]
+    nodesToAdd?: Pick<TaskNode, "data" | "position" | "id" | "type">[]
+    nodesToRemove?: Pick<TaskNode, "id">[]
+    edgesToAdd?: Pick<TaskEdge, "source" | "target" | "id">[]
+    edgesToRemove?: Pick<TaskEdge, "id">[]
   }
 ) => {
   try {
@@ -143,7 +165,7 @@ export const editProject = async (
                   id: edge.id,
                   source: edge.source,
                   target: edge.target,
-                  type: TaskNodeType.TASK,
+                  type: NodeType.TASK,
                   animated: false,
                   deletable: true,
                   reconnectable: true,
