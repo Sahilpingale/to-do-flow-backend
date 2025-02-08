@@ -4,4 +4,6 @@ dist
 .git
 .gitignore
 .env
+.env.development
+.env.production
 *.md

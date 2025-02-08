@@ -1,7 +1,23 @@
 import { v4 as uuidv4 } from "uuid"
 import { PrismaClient } from "@prisma/client"
+import dotenv from "dotenv"
 
-const prisma = new PrismaClient()
+// Load environment variables based on NODE_ENV
+const envFile =
+  process.env.NODE_ENV === "production" ? ".env.production" : ".env.development"
+dotenv.config({ path: envFile })
+
+console.log("NODE_ENV", process.env.NODE_ENV)
+
+console.log("DATABASE_URL", process.env.DATABASE_URL)
+
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.DATABASE_URL,
+    },
+  },
+})
 
 async function main() {
   // Step 1: Create a new project

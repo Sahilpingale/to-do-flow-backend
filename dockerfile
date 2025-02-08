@@ -1,32 +1,52 @@
-# Use Node.js LTS version
-FROM node:20-slim
+# Stage 1: Base Stage
+FROM node:20-slim AS base
 
-# Install OpenSSL library
-RUN apt-get update && apt-get install -y openssl
+RUN apt-get update && apt-get install -y --no-install-recommends openssl \
+    && rm -rf /var/lib/apt/lists/*
 
-# Create app directory
-WORKDIR /usr/src/app
+WORKDIR /app
 
-# Copy package files
+# Stage 2: Builder Stage
+FROM base AS builder
+
 COPY package*.json ./
 
-# Install dependencies
 RUN npm install
 
-# Copy the rest of the source code
-COPY . .
-
-# Generate Prisma Client
-RUN npx prisma generate
-
-# Copy prisma schema
 COPY prisma ./prisma/
 
-# Build TypeScript code
+RUN npx prisma generate
+
+COPY . .
+
 RUN npm run build
 
-# Expose port (if your app will listen on a port)
-EXPOSE 9000
+# Stage 3: Production Stage
+FROM base AS production
 
-# Run the application (using dev script for development)
-CMD [ "npm", "run", "dev" ]
+ENV NODE_ENV=production PORT=${PORT}
+
+WORKDIR /app
+
+COPY package*.json ./
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/prisma ./prisma
+
+# Install production dependencies only
+RUN npm ci --only=production
+
+EXPOSE ${PORT}
+CMD ["node", "dist/index.js"]
+
+# Stage 4: Development Stage
+FROM base AS development
+
+ENV NODE_ENV=development PORT=9000
+
+WORKDIR /app
+
+COPY --from=builder /app ./
+RUN npm install
+
+EXPOSE ${PORT}
+CMD ["npx", "nodemon", "src/index.ts"]

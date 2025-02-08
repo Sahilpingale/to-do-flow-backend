@@ -14,8 +14,11 @@
     "prisma:studio": "prisma studio",
     "generate-swagger": "ts-node src/config/swagger-generator.ts",
     "database:seed": "npx ts-node src/scripts/seed.ts",
-    "database:reset": "npx ts-node src/scripts/deleteDatabaseData.ts && npx ts-node src/scripts/seed.ts",
-    "watch": "tsc --noEmit --watch"
+    "database:init": "NODE_ENV=development prisma migrate dev && npm run database:seed",
+    "database:reset": "NODE_ENV=development prisma migrate reset && npm run database:seed",
+    "watch": "tsc --noEmit --watch",
+    "docker:prod": "docker compose --env-file .env.production up --build app-production db-production",
+    "docker:dev": "docker compose --env-file .env.development up --build app-development db-development"
   },
   "keywords": [],
   "author": "",
