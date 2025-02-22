@@ -35,16 +35,18 @@ jobs:
             --exclude 'docker-compose.dev.yml' \
             ./ ${{ secrets.AWS_EC2_USERNAME }}@${{ secrets.AWS_EC2_HOST }}:/home/${{ secrets.AWS_EC2_USERNAME }}/app/
 
-      - name: Deploy to EC2
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          PORT: ${{ secrets.PORT }}
+      - name: Create env file and deploy
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.AWS_EC2_USERNAME }}@${{ secrets.AWS_EC2_HOST }} '
             cd /home/${{ secrets.AWS_EC2_USERNAME }}/app && \
-            export DATABASE_URL="${{ secrets.DATABASE_URL }}" && \
-            export PORT="${{ secrets.PORT }}" && \
-            docker compose pull && \
-            docker compose up -d --build app-production db-production && \
+            cat > .env.production << EOL
+            DATABASE_URL=${{ secrets.DATABASE_URL }}
+            PORT=${{ secrets.PORT }}
+            POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+            POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+            POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+            EOL && \
+            docker compose --env-file .env.production pull && \
+            docker compose --env-file .env.production up -d --build app-production db-production && \
             docker system prune -f
           '
