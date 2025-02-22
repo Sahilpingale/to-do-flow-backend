@@ -1,19 +1,22 @@
 services:
-  app-production:
+  app-development:
     build:
       context: .
-      target: production
+      target: development
+    volumes:
+      - .:/app
+      - /app/node_modules
     ports:
-      - ${PORT:-9000}:${PORT:-9000}
-    environment:
-      - NODE_ENV=production
-      - DATABASE_URL=${DATABASE_URL}
-      - PORT=${PORT:-9000}
+      - 9001:9001
+    command: npm run dev
+    env_file:
+      - .env.development
     depends_on:
-      - db-production
+      - db-development
 
-  db-production:
+  db-development:
     image: postgres:16
+    restart: always
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres

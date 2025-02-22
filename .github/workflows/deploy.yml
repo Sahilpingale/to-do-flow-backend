@@ -1,0 +1,50 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          echo "StrictHostKeyChecking no" > ~/.ssh/config
+          eval "$(ssh-agent -s)"
+          ssh-add ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.AWS_EC2_HOST }} >> ~/.ssh/known_hosts
+
+      # Test SSH connection
+      - name: Test SSH connection
+        run: ssh -v ${{ secrets.AWS_EC2_USERNAME }}@${{ secrets.AWS_EC2_HOST }} 'echo "SSH connection successful"'
+
+      - name: Copy files to EC2
+        run: |
+          rsync -avz -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" \
+            --exclude '.git' \
+            --exclude 'node_modules' \
+            --exclude '.github' \
+            --exclude 'docker-compose.dev.yml' \
+            ./ ${{ secrets.AWS_EC2_USERNAME }}@${{ secrets.AWS_EC2_HOST }}:/home/${{ secrets.AWS_EC2_USERNAME }}/app/
+
+      - name: Deploy to EC2
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          PORT: ${{ secrets.PORT }}
+        run: |
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.AWS_EC2_USERNAME }}@${{ secrets.AWS_EC2_HOST }} '
+            cd /home/${{ secrets.AWS_EC2_USERNAME }}/app && \
+            export DATABASE_URL="${{ secrets.DATABASE_URL }}" && \
+            export PORT="${{ secrets.PORT }}" && \
+            docker compose pull && \
+            docker compose up -d --build app-production db-production && \
+            docker system prune -f
+          '
