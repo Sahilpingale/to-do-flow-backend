@@ -9,4 +9,5 @@ app.listen(port, () => {
   console.log(
     green(`Swagger UI is running at http://localhost:${port}/api-docs`)
   )
+  console.log("Github Actions Deployed")
 })
