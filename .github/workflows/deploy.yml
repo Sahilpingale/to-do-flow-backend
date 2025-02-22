@@ -18,13 +18,6 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           echo "StrictHostKeyChecking no" > ~/.ssh/config
-          eval "$(ssh-agent -s)"
-          ssh-add ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.AWS_EC2_HOST }} >> ~/.ssh/known_hosts
-
-      # Test SSH connection
-      - name: Test SSH connection
-        run: ssh -v ${{ secrets.AWS_EC2_USERNAME }}@${{ secrets.AWS_EC2_HOST }} 'echo "SSH connection successful"'
 
       - name: Copy files to EC2
         run: |
@@ -39,14 +32,15 @@ jobs:
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.AWS_EC2_USERNAME }}@${{ secrets.AWS_EC2_HOST }} '
             cd /home/${{ secrets.AWS_EC2_USERNAME }}/app && \
-            cat > .env.production << EOL
-            DATABASE_URL=${{ secrets.DATABASE_URL }}
-            PORT=${{ secrets.PORT }}
-            POSTGRES_USER=${{ secrets.POSTGRES_USER }}
-            POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
-            POSTGRES_DB=${{ secrets.POSTGRES_DB }}
-            EOL && \
+            echo "NODE_ENV=production" > .env.production && \
+            echo "PORT=${{ secrets.PORT }}" >> .env.production && \
+            echo "DATABASE_URL=postgresql://postgres:postgres@db-production:5432/todo_db?schema=public" >> .env.production && \
+            echo "POSTGRES_USER=postgres" >> .env.production && \
+            echo "POSTGRES_PASSWORD=postgres" >> .env.production && \
+            echo "POSTGRES_DB=todo_db" >> .env.production && \
             docker compose --env-file .env.production pull && \
             docker compose --env-file .env.production up -d --build app-production db-production && \
+            sleep 10 && \
+            docker compose --env-file .env.production exec -T app-production npx prisma migrate deploy && \
             docker system prune -f
           '
