@@ -14,6 +14,7 @@ app.use(
         "http://localhost:3000",
         "http://localhost:5173", // Vite's default port
         "https://hoppscotch.io",
+        "https://d3b2seba95oc2q.cloudfront.net",
         process.env.FRONTEND_URL || "",
       ].filter((url) => url !== "")
 
