@@ -34,6 +34,7 @@ jobs:
             cd /home/${{ secrets.AWS_EC2_USERNAME }}/app && \
             echo "NODE_ENV=production" > .env.production && \
             echo "PORT=${{ secrets.PORT }}" >> .env.production && \
+            echo "FRONTEND_URL=${{ secrets.FRONTEND_URL }}" >> .env.production && \
             echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env.production && \
             docker compose --env-file .env.production pull && \
             docker compose --env-file .env.production up -d --build app-production db-production && \
