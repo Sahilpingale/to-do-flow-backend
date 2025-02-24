@@ -13,8 +13,21 @@ app.use(
       const allowedOrigins = [
         "http://localhost:3000",
         "http://localhost:5173", // Vite's default port
-        process.env.FRONTEND_URL,
-      ].filter(Boolean)
+        "https://hoppscotch.io",
+        process.env.FRONTEND_URL || "",
+      ].filter((url) => url !== "")
+
+      console.log("Received origin:", origin)
+      console.log("Allowed origins:", allowedOrigins)
+
+      // Allow Hoppscotch Chrome extension in production temporarily
+      if (
+        process.env.NODE_ENV === "production" &&
+        origin?.startsWith("chrome-extension://")
+      ) {
+        callback(null, true)
+        return
+      }
 
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true)
