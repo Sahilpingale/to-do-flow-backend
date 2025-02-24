@@ -34,13 +34,13 @@ jobs:
             cd /home/${{ secrets.AWS_EC2_USERNAME }}/app && \
             echo "NODE_ENV=production" > .env.production && \
             echo "PORT=${{ secrets.PORT }}" >> .env.production && \
-            echo "DATABASE_URL=postgresql://postgres:postgres@db-production:5432/todo_db?schema=public" >> .env.production && \
-            echo "POSTGRES_USER=postgres" >> .env.production && \
-            echo "POSTGRES_PASSWORD=postgres" >> .env.production && \
-            echo "POSTGRES_DB=todo_db" >> .env.production && \
+            echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env.production && \
             docker compose --env-file .env.production pull && \
             docker compose --env-file .env.production up -d --build app-production db-production && \
-            sleep 10 && \
+            until docker compose --env-file .env.production exec -T db-production pg_isready -U postgres; do
+              echo 'Waiting for database to be ready...'
+              sleep 2
+            done && \
             docker compose --env-file .env.production exec -T app-production npx prisma migrate deploy && \
             docker system prune -f
           '
