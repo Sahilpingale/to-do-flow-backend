@@ -18,7 +18,7 @@
     "database:reset": "NODE_ENV=development prisma migrate reset && npm run database:seed",
     "watch": "tsc --noEmit --watch",
     "docker:prod": "docker compose --env-file .env.production up --build",
-    "docker:dev": "docker compose --env-file .env.development up --build"
+    "docker:dev": "docker compose --env-file .env.development --file docker-compose.dev.yml up --build"
   },
   "keywords": [],
   "author": "",

@@ -228,6 +228,13 @@ export const editProject = async (
 }
 
 export const deleteProject = async (id: string) => {
+  await prisma.taskNode.deleteMany({
+    where: { projectId: id },
+  })
+  await prisma.taskEdge.deleteMany({
+    where: { projectId: id },
+  })
+
   return prisma.project.delete({
     where: { id },
   })
