@@ -6,7 +6,6 @@ import projectRoutes from "./routes/routes.project"
 
 const app = express()
 
-// Add CORS middleware
 app.use(
   cors({
     origin: (origin, callback) => {
