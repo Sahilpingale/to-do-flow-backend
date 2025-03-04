@@ -8,11 +8,16 @@ services:
       - /app/node_modules
     ports:
       - 9001:9001
-    command: npm run dev
+    command: sh -c "npx prisma migrate deploy && npm run dev"
     env_file:
       - .env.development
     depends_on:
-      - db-development
+      db-development:
+        condition: service_healthy
+    environment:
+      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
+      - FIREBASE_CLIENT_EMAIL=${FIREBASE_CLIENT_EMAIL}
+      - FIREBASE_PRIVATE_KEY=${FIREBASE_PRIVATE_KEY}
 
   db-development:
     image: postgres:16

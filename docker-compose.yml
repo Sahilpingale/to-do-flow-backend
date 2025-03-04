@@ -9,6 +9,9 @@ services:
       - NODE_ENV=production
       - DATABASE_URL=${DATABASE_URL}
       - PORT=${PORT:-9000}
+      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
+      - FIREBASE_CLIENT_EMAIL=${FIREBASE_CLIENT_EMAIL}
+      - FIREBASE_PRIVATE_KEY=${FIREBASE_PRIVATE_KEY}
     depends_on:
       - db-production
 

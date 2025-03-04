@@ -3,6 +3,7 @@ import cors from "cors"
 import swaggerUi from "swagger-ui-express"
 import { swaggerSpec } from "./config/swagger.config"
 import projectRoutes from "./routes/routes.project"
+import { authMiddleware } from "./middlewares/authMiddleware"
 
 const app = express()
 
@@ -17,14 +18,7 @@ app.use(
         process.env.FRONTEND_URL || "",
       ].filter((url) => url !== "")
 
-      console.log("Received origin:", origin)
-      console.log("Allowed origins:", allowedOrigins)
-
-      // Allow Hoppscotch Chrome extension in production temporarily
-      if (
-        process.env.NODE_ENV === "production" &&
-        origin?.startsWith("chrome-extension://")
-      ) {
+      if (origin?.startsWith("chrome-extension://")) {
         callback(null, true)
         return
       }
@@ -42,7 +36,10 @@ app.use(
 )
 
 app.use(express.json())
+// Unprotected routes
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec))
-app.use("/projects", projectRoutes)
+
+// Protected routes
+app.use("/projects", authMiddleware, projectRoutes)
 
 export default app
