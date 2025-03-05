@@ -20,10 +20,20 @@ const prisma = new PrismaClient({
 })
 
 async function main() {
-  // Step 1: Create a new project
+  const user = await prisma.user.create({
+    data: {
+      email: "test@example.com",
+    },
+  })
+
   const project = await prisma.project.create({
     data: {
       name: "Sample Project",
+      user: {
+        connect: {
+          id: user.id,
+        },
+      },
     },
   })
 

@@ -1,6 +1,6 @@
-import { Request, Response, RequestHandler } from "express"
+import { Response, RequestHandler } from "express"
 import * as projectService from "../services/services.project"
-
+import { Request } from "../types/authTypes"
 /**
  * @swagger
  * components:
@@ -105,7 +105,16 @@ import * as projectService from "../services/services.project"
  */
 export const createNewProject = async (req: Request, res: Response) => {
   try {
-    const project = await projectService.createProject(req.body)
+    if (!req.user || !req.user.uid) {
+      res.status(401).json({ error: "Unauthorized: User not authenticated" })
+      return
+    }
+
+    const project = await projectService.createProject({
+      name: req.body.name,
+      userId: req.user.uid,
+    })
+
     res.status(201).json(project)
   } catch (error) {
     res.status(500).json({ error: (error as Error).message })

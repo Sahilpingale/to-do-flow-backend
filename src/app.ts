@@ -36,10 +36,7 @@ app.use(
 )
 
 app.use(express.json())
-// Unprotected routes
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec))
-
-// Protected routes
-app.use("/projects", authMiddleware, projectRoutes)
+app.use("/projects", projectRoutes)
 
 export default app

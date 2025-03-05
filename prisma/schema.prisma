@@ -14,6 +14,8 @@ model Project {
   updatedAt DateTime    @updatedAt
   nodes     TaskNode[]
   edges     TaskEdge[]
+  userId    String
+  user      User        @relation(fields: [userId], references: [id])
 }
 
 model TaskNode {
@@ -38,6 +40,14 @@ model TaskEdge {
   reconnectable  Boolean
   projectId      String
   project        Project     @relation(fields: [projectId], references: [id])
+}
+
+model User {
+  id        String      @id @default(uuid())
+  email     String      @unique
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  projects  Project[]
 }
 
 enum TaskStatus {

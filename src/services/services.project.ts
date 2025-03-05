@@ -4,9 +4,20 @@ import { IProject, TaskNode } from "../models/models"
 
 const prisma = new PrismaClient()
 
-export const createProject = async (data: { name: string }) => {
+export const createProject = async (data: { name: string; userId: string }) => {
   return prisma.project.create({
-    data,
+    data: {
+      name: data.name,
+      user: {
+        connect: {
+          id: data.userId,
+        },
+      },
+    },
+    include: {
+      nodes: true,
+      edges: true,
+    },
   })
 }
 

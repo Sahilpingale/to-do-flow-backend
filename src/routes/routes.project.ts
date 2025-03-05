@@ -6,8 +6,11 @@ import {
   fetchAllProjects,
   deleteProject,
 } from "../controllers/controller.project"
+import { authMiddleware } from "../middlewares/authMiddleware"
 
 const projectRoutes = express.Router()
+
+projectRoutes.use(authMiddleware)
 
 projectRoutes.post("/", createNewProject)
 projectRoutes.get("/", fetchAllProjects)

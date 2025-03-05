@@ -1,5 +1,7 @@
-import { NextFunction, Request, Response } from "express"
 import admin from "firebase-admin"
+import prisma from "../lib/prisma"
+import { Response, NextFunction } from "express"
+import { Request } from "../types/authTypes"
 
 try {
   admin.initializeApp({
@@ -18,7 +20,7 @@ export const authMiddleware = async (
   req: Request,
   res: Response,
   next: NextFunction
-): Promise<void> => {
+) => {
   // 1. Extract token from header
   const authHeader = req.headers.authorization
   if (
@@ -40,6 +42,8 @@ export const authMiddleware = async (
       res.status(401).json({ error: "Unauthorized: Invalid token" })
       return
     }
+
+    req.user = decodedToken
 
     next()
   } catch (error) {
