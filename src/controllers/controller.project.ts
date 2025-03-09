@@ -1,6 +1,8 @@
 import { Response, RequestHandler } from "express"
 import * as projectService from "../services/services.project"
 import { Request } from "../types/authTypes"
+import { asyncHandler } from "../utils/asyncHandler"
+import { NotFoundError, UnauthorizedError } from "../utils/errors"
 /**
  * @swagger
  * components:
@@ -103,11 +105,10 @@ import { Request } from "../types/authTypes"
  *       500:
  *         description: Internal server error
  */
-export const createNewProject = async (req: Request, res: Response) => {
-  try {
+export const createNewProject = asyncHandler(
+  async (req: Request, res: Response) => {
     if (!req.user || !req.user.uid) {
-      res.status(401).json({ error: "Unauthorized: User not authenticated" })
-      return
+      throw new UnauthorizedError()
     }
 
     const project = await projectService.createProject({
@@ -116,10 +117,8 @@ export const createNewProject = async (req: Request, res: Response) => {
     })
 
     res.status(201).json(project)
-  } catch (error) {
-    res.status(500).json({ error: (error as Error).message })
   }
-}
+)
 
 /**
  * @swagger
@@ -140,14 +139,12 @@ export const createNewProject = async (req: Request, res: Response) => {
  *       500:
  *         description: Internal server error
  */
-export const fetchAllProjects = async (req: Request, res: Response) => {
-  try {
+export const fetchAllProjects = asyncHandler(
+  async (req: Request, res: Response) => {
     const projects = await projectService.getProjects(req.user?.uid || "")
     res.json(projects)
-  } catch (error) {
-    res.status(500).json({ error: (error as Error).message })
   }
-}
+)
 
 /**
  * @swagger
@@ -175,20 +172,20 @@ export const fetchAllProjects = async (req: Request, res: Response) => {
  *       500:
  *         description: Internal server error
  */
-export const fetchProjectById = async (req: Request, res: Response) => {
-  try {
+export const fetchProjectById = asyncHandler(
+  async (req: Request, res: Response) => {
     const project = await projectService.getProjectById(
       req.params.id,
       req.user?.uid || ""
     )
+
     if (!project) {
-      return void res.status(404).json({ error: "Project not found" })
+      throw new NotFoundError("Project not found")
     }
+
     res.json(project)
-  } catch (error) {
-    res.status(500).json({ error: (error as Error).message })
   }
-}
+)
 
 /**
  * @swagger
@@ -274,20 +271,20 @@ export const fetchProjectById = async (req: Request, res: Response) => {
  *       500:
  *         description: Internal server error
  */
-export const updateProjectDetails: RequestHandler = async (req, res) => {
-  try {
+export const updateProjectDetails = asyncHandler(
+  async (req: Request, res: Response) => {
     const updatedProject = await projectService.editProject(
       req.params.id,
       req.body
     )
+
     if (!updatedProject) {
-      return void res.status(404).json({ error: "Project not found" })
+      throw new NotFoundError("Project not found")
     }
+
     res.json(updatedProject)
-  } catch (error) {
-    res.status(500).json({ error: (error as Error).message })
   }
-}
+)
 
 /**
  * @swagger
@@ -310,11 +307,9 @@ export const updateProjectDetails: RequestHandler = async (req, res) => {
  *       404:
  *         description: Project not found
  */
-export const deleteProject = async (req: Request, res: Response) => {
-  try {
+export const deleteProject = asyncHandler(
+  async (req: Request, res: Response) => {
     await projectService.deleteProject(req.params.id, req.user?.uid || "")
     res.status(204).send()
-  } catch (error) {
-    res.status(500).json({ error: (error as Error).message })
   }
-}
+)

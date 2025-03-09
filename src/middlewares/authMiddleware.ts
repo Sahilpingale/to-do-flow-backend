@@ -1,6 +1,8 @@
 import admin from "firebase-admin"
 import { Response, NextFunction } from "express"
 import { Request } from "../types/authTypes"
+import { UnauthorizedError } from "../utils/errors"
+import { asyncHandler } from "../utils/asyncHandler"
 
 try {
   admin.initializeApp({
@@ -15,38 +17,33 @@ try {
   console.error("Error initializing Firebase Admin:", error)
 }
 
-export const authMiddleware = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  // 1. Extract token from header
-  const authHeader = req.headers.authorization
-  if (
-    !authHeader ||
-    !authHeader.startsWith("Bearer ") ||
-    !authHeader.split("Bearer ")[1]
-  ) {
-    res.status(401).json({ error: "Unauthorized: No token provided" })
-    return
-  }
-
-  const token = authHeader.split("Bearer ")[1]
-
-  // 3. Verify token with admin
-  try {
-    const decodedToken = await admin.auth().verifyIdToken(token)
-
-    if (!decodedToken) {
-      res.status(401).json({ error: "Unauthorized: Invalid token" })
-      return
+export const authMiddleware = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    // 1. Extract token from header
+    const authHeader = req.headers.authorization
+    if (
+      !authHeader ||
+      !authHeader.startsWith("Bearer ") ||
+      !authHeader.split("Bearer ")[1]
+    ) {
+      throw new UnauthorizedError("No token provided")
     }
 
-    req.user = decodedToken
+    const token = authHeader.split("Bearer ")[1]
 
-    next()
-  } catch (error) {
-    res.status(401).json({ error: "Unauthorized: Invalid token" })
-    return
+    // 2. Verify token with Firebase Admin
+    try {
+      const decodedToken = await admin.auth().verifyIdToken(token)
+
+      if (!decodedToken) {
+        throw new UnauthorizedError("Invalid token")
+      }
+
+      // 3. Set user information on request object
+      req.user = decodedToken
+      next()
+    } catch (error) {
+      throw new UnauthorizedError("Invalid token")
+    }
   }
-}
+)

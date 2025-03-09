@@ -4,6 +4,8 @@ import swaggerUi from "swagger-ui-express"
 import { swaggerSpec } from "./config/swagger.config"
 import projectRoutes from "./routes/routes.project"
 import authRoutes from "./routes/routes.auth"
+import { errorHandler } from "./middlewares/errorMiddleware"
+import { NotFoundError } from "./utils/errors"
 
 const app = express()
 
@@ -39,5 +41,13 @@ app.use(express.json())
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 app.use("/projects", projectRoutes)
 app.use("/auth", authRoutes)
+
+// Handle 404 errors for undefined routes
+app.all("*", (req, res, next) => {
+  next(new NotFoundError(`Can't find ${req.originalUrl} on this server!`))
+})
+
+// Global error handler - must be after all routes
+app.use(errorHandler)
 
 export default app
