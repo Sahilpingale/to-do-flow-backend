@@ -140,9 +140,9 @@ export const createNewProject = async (req: Request, res: Response) => {
  *       500:
  *         description: Internal server error
  */
-export const fetchAllProjects: RequestHandler = async (req, res) => {
+export const fetchAllProjects = async (req: Request, res: Response) => {
   try {
-    const projects = await projectService.getProjects()
+    const projects = await projectService.getProjects(req.user?.uid || "")
     res.json(projects)
   } catch (error) {
     res.status(500).json({ error: (error as Error).message })
@@ -175,9 +175,12 @@ export const fetchAllProjects: RequestHandler = async (req, res) => {
  *       500:
  *         description: Internal server error
  */
-export const fetchProjectById: RequestHandler = async (req, res) => {
+export const fetchProjectById = async (req: Request, res: Response) => {
   try {
-    const project = await projectService.getProjectById(req.params.id)
+    const project = await projectService.getProjectById(
+      req.params.id,
+      req.user?.uid || ""
+    )
     if (!project) {
       return void res.status(404).json({ error: "Project not found" })
     }
@@ -309,7 +312,7 @@ export const updateProjectDetails: RequestHandler = async (req, res) => {
  */
 export const deleteProject = async (req: Request, res: Response) => {
   try {
-    await projectService.deleteProject(req.params.id)
+    await projectService.deleteProject(req.params.id, req.user?.uid || "")
     res.status(204).send()
   } catch (error) {
     res.status(500).json({ error: (error as Error).message })

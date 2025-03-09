@@ -3,7 +3,7 @@ import cors from "cors"
 import swaggerUi from "swagger-ui-express"
 import { swaggerSpec } from "./config/swagger.config"
 import projectRoutes from "./routes/routes.project"
-import { authMiddleware } from "./middlewares/authMiddleware"
+import authRoutes from "./routes/routes.auth"
 
 const app = express()
 
@@ -38,5 +38,6 @@ app.use(
 app.use(express.json())
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 app.use("/projects", projectRoutes)
+app.use("/auth", authRoutes)
 
 export default app

@@ -1,5 +1,4 @@
 import admin from "firebase-admin"
-import prisma from "../lib/prisma"
 import { Response, NextFunction } from "express"
 import { Request } from "../types/authTypes"
 

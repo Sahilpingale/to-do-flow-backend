@@ -1,5 +1,5 @@
 import { PrismaClient, TaskEdge } from "@prisma/client"
-import { TaskStatus, NodeType } from "@prisma/client"
+import { NodeType } from "@prisma/client"
 import { IProject, TaskNode } from "../models/models"
 
 const prisma = new PrismaClient()
@@ -21,8 +21,11 @@ export const createProject = async (data: { name: string; userId: string }) => {
   })
 }
 
-export const getProjects = async () => {
+export const getProjects = async (userId: string) => {
   return prisma.project.findMany({
+    where: {
+      userId,
+    },
     include: {
       nodes: true,
       edges: true,
@@ -30,9 +33,12 @@ export const getProjects = async () => {
   })
 }
 
-export const getProjectById = async (id: string): Promise<IProject | null> => {
+export const getProjectById = async (
+  id: string,
+  userId: string
+): Promise<IProject | null> => {
   const project = await prisma.project.findUnique({
-    where: { id },
+    where: { id, userId },
     include: {
       nodes: true,
       edges: true,
@@ -238,7 +244,7 @@ export const editProject = async (
   }
 }
 
-export const deleteProject = async (id: string) => {
+export const deleteProject = async (id: string, userId: string) => {
   await prisma.taskNode.deleteMany({
     where: { projectId: id },
   })
@@ -247,6 +253,6 @@ export const deleteProject = async (id: string) => {
   })
 
   return prisma.project.delete({
-    where: { id },
+    where: { id, userId },
   })
 }
