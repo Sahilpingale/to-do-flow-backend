@@ -39,6 +39,7 @@ jobs:
             echo "FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}" >> .env.production && \
             echo "FIREBASE_CLIENT_EMAIL=${{ secrets.FIREBASE_CLIENT_EMAIL }}" >> .env.production && \
             echo "FIREBASE_PRIVATE_KEY='${{ secrets.FIREBASE_PRIVATE_KEY }}'" >> .env.production && \
+            echo "BACKEND_URL=${{ secrets.BACKEND_URL }}" >> .env.production && \
             docker compose --env-file .env.production pull && \
             docker compose --env-file .env.production up -d --build app-production db-production && \
             until docker compose --env-file .env.production exec -T db-production pg_isready -U postgres; do
