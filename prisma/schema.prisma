@@ -51,7 +51,6 @@ model User {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   projects  Project[]
-  test      String?
 }
 
 enum TaskStatus {
