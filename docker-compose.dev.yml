@@ -20,6 +20,7 @@ services:
       - FIREBASE_PRIVATE_KEY=${FIREBASE_PRIVATE_KEY}
       - DATABASE_URL=${DATABASE_URL}
       - BACKEND_URL=${BACKEND_URL}
+      - FIREBASE_API_KEY=${FIREBASE_API_KEY}
 
   db-development:
     image: postgres:16
