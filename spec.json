@@ -7,17 +7,80 @@
   },
   "servers": [
     {
-      "url": "http://localhost:3000"
+      "url": ""
     }
   ],
   "paths": {
+    "/auth/login": {
+      "post": {
+        "summary": "Login or register a user",
+        "tags": ["Authentication"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User logged in successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/refresh-token": {
+      "post": {
+        "summary": "Refresh access token using refresh token from HTTP-only cookie",
+        "tags": ["Auth"],
+        "responses": {
+          "200": {
+            "description": "Successfully refreshed token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "accessToken": {
+                      "type": "string",
+                      "description": "New access token"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or expired refresh token"
+          }
+        }
+      }
+    },
     "/projects": {
       "post": {
         "summary": "Create a new project",
         "description": "Creates a new project with the given name.",
-        "tags": [
-          "Projects"
-        ],
+        "tags": ["Projects"],
         "requestBody": {
           "required": true,
           "content": {
@@ -53,9 +116,7 @@
       "get": {
         "summary": "Get all projects",
         "description": "Retrieves a list of all projects with their associated nodes and edges.",
-        "tags": [
-          "Projects"
-        ],
+        "tags": ["Projects"],
         "responses": {
           "200": {
             "description": "A list of projects",
@@ -80,9 +141,7 @@
       "get": {
         "summary": "Get a project by ID",
         "description": "Retrieves a project with its nodes and edges by ID.",
-        "tags": [
-          "Projects"
-        ],
+        "tags": ["Projects"],
         "parameters": [
           {
             "in": "path",
@@ -116,9 +175,7 @@
       "patch": {
         "summary": "Edit a project",
         "description": "Updates a project's nodes and edges.",
-        "tags": [
-          "Projects"
-        ],
+        "tags": ["Projects"],
         "parameters": [
           {
             "in": "path",
@@ -243,9 +300,7 @@
       "delete": {
         "summary": "Delete a project",
         "description": "Deletes a project by ID.",
-        "tags": [
-          "Projects"
-        ],
+        "tags": ["Projects"],
         "parameters": [
           {
             "in": "path",
@@ -272,19 +327,76 @@
   },
   "components": {
     "schemas": {
+      "LoginRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "User's email address"
+          },
+          "displayName": {
+            "type": "string",
+            "description": "User's display name"
+          },
+          "photoURL": {
+            "type": "string",
+            "description": "URL to user's profile photo"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "description": "User's phone number"
+          },
+          "uid": {
+            "type": "string",
+            "description": "User's unique identifier"
+          }
+        },
+        "required": ["email", "displayName", "uid"],
+        "example": {
+          "email": "user@example.com",
+          "displayName": "John Doe",
+          "photoURL": "https://example.com/photo.jpg",
+          "phoneNumber": "+1234567890",
+          "uid": "user123"
+        }
+      },
+      "LoginResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "User's ID in the system"
+          },
+          "email": {
+            "type": "string",
+            "description": "User's email address"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Account creation timestamp"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Account last update timestamp"
+          }
+        },
+        "required": ["id", "email", "createdAt", "updatedAt"],
+        "example": {
+          "id": "12345",
+          "email": "user@example.com",
+          "createdAt": "2023-01-01T00:00:00.000Z",
+          "updatedAt": "2023-01-01T00:00:00.000Z"
+        }
+      },
       "NodeType": {
         "type": "string",
-        "enum": [
-          "TASK"
-        ]
+        "enum": ["TASK"]
       },
       "TaskStatus": {
         "type": "string",
-        "enum": [
-          "TODO",
-          "IN_PROGRESS",
-          "DONE"
-        ]
+        "enum": ["TODO", "IN_PROGRESS", "DONE"]
       },
       "Project": {
         "type": "object",

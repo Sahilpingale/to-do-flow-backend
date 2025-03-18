@@ -1,4 +1,4 @@
-import { Response, RequestHandler } from "express"
+import { Response } from "express"
 import * as projectService from "../services/services.project"
 import { Request } from "../types/authTypes"
 import { asyncHandler } from "../utils/asyncHandler"

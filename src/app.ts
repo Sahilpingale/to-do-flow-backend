@@ -6,6 +6,7 @@ import projectRoutes from "./routes/routes.project"
 import authRoutes from "./routes/routes.auth"
 import { errorHandler } from "./middlewares/errorMiddleware"
 import { NotFoundError } from "./utils/errors"
+import cookieParser from "cookie-parser"
 
 const app = express()
 
@@ -38,6 +39,7 @@ app.use(
 )
 
 app.use(express.json())
+app.use(cookieParser())
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 app.use("/projects", projectRoutes)
 app.use("/auth", authRoutes)
