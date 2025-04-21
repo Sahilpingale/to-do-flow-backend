@@ -1,6 +1,6 @@
 import { Response } from "express"
 import * as projectService from "../services/services.project"
-import { Request } from "../types/authTypes"
+import { Request } from "express"
 import { asyncHandler } from "../utils/asyncHandler"
 import { NotFoundError, UnauthorizedError } from "../utils/errors"
 /**
@@ -76,7 +76,102 @@ import { NotFoundError, UnauthorizedError } from "../utils/errors"
  *           type: boolean
  *         reconnectable:
  *           type: boolean
+ *     CreateProjectRequest:
+ *       type: object
+ *       properties:
+ *         name:
+ *           type: string
+ *           description: Name of the project
+ *       required:
+ *         - name
+ *       example:
+ *         name: "My New Project"
+ *
+ *     ProjectResponse:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           description: Unique identifier for the project
+ *         name:
+ *           type: string
+ *           description: Name of the project
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
+ *         nodes:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/TaskNode'
+ *         edges:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/TaskEdge'
+ *
+ *     UpdateProjectRequest:
+ *       type: object
+ *       properties:
+ *         nodesToUpdate:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/TaskNode'
+ *         nodesToAdd:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/TaskNode'
+ *         nodesToRemove:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: string
+ *         edgesToAdd:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/TaskEdge'
+ *         edgesToRemove:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: string
  */
+
+// Define interface types for requests and responses
+export interface ICreateProjectRequest {
+  name: string
+}
+
+export interface IUpdateProjectRequest {
+  nodesToUpdate?: any[]
+  nodesToAdd?: any[]
+  nodesToRemove?: any[]
+  edgesToAdd?: any[]
+  edgesToRemove?: any[]
+}
+
+// Define request and response types
+export type CreateProjectRequest = Request<{}, {}, ICreateProjectRequest>
+export type ProjectResponse = Response<any>
+export type ProjectsResponse = Response<any[]>
+export type UpdateProjectRequest = Request<
+  { id: string },
+  any,
+  IUpdateProjectRequest
+>
+
+// Add this interface to extend the Express Request
+interface AuthenticatedRequest extends Request {
+  user?: {
+    uid: string
+    [key: string]: any
+  }
+}
 
 /**
  * @swagger
@@ -90,23 +185,24 @@ import { NotFoundError, UnauthorizedError } from "../utils/errors"
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *                 description: Name of the project
+ *             $ref: '#/components/schemas/CreateProjectRequest'
  *     responses:
  *       201:
  *         description: Project created successfully
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Project'
+ *               $ref: '#/components/schemas/ProjectResponse'
+ *       401:
+ *         description: Unauthorized - User not authenticated
  *       500:
  *         description: Internal server error
  */
 export const createNewProject = asyncHandler(
-  async (req: Request, res: Response) => {
+  async (
+    req: CreateProjectRequest & AuthenticatedRequest,
+    res: ProjectResponse
+  ) => {
     if (!req.user || !req.user.uid) {
       throw new UnauthorizedError()
     }
@@ -125,7 +221,7 @@ export const createNewProject = asyncHandler(
  * /projects:
  *   get:
  *     summary: Get all projects
- *     description: Retrieves a list of all projects with their associated nodes and edges.
+ *     description: Retrieves a list of all projects for the authenticated user.
  *     tags: [Projects]
  *     responses:
  *       200:
@@ -135,12 +231,14 @@ export const createNewProject = asyncHandler(
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/Project'
+ *                 $ref: '#/components/schemas/ProjectResponse'
+ *       401:
+ *         description: Unauthorized - User not authenticated
  *       500:
  *         description: Internal server error
  */
 export const fetchAllProjects = asyncHandler(
-  async (req: Request, res: Response) => {
+  async (req: AuthenticatedRequest, res: ProjectsResponse) => {
     const projects = await projectService.getProjects(req.user?.uid || "")
     res.json(projects)
   }
@@ -166,14 +264,14 @@ export const fetchAllProjects = asyncHandler(
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Project'
+ *               $ref: '#/components/schemas/ProjectResponse'
  *       404:
  *         description: Project not found
  *       500:
  *         description: Internal server error
  */
 export const fetchProjectById = asyncHandler(
-  async (req: Request, res: Response) => {
+  async (req: AuthenticatedRequest, res: ProjectResponse) => {
     const project = await projectService.getProjectById(
       req.params.id,
       req.user?.uid || ""
@@ -206,66 +304,14 @@ export const fetchProjectById = asyncHandler(
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               nodesToUpdate:
- *                 type: array
- *                 items:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: string
- *                     data:
- *                       type: object
- *                     position:
- *                       type: object
- *                     type:
- *                       type: string
- *               nodesToAdd:
- *                 type: array
- *                 items:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: string
- *                     data:
- *                       type: object
- *                     position:
- *                       type: object
- *                     type:
- *                       type: string
- *               nodesToRemove:
- *                 type: array
- *                 items:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: string
- *               edgesToAdd:
- *                 type: array
- *                 items:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: string
- *                     source:
- *                       type: string
- *                     target:
- *                       type: string
- *               edgesToRemove:
- *                 type: array
- *                 items:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: string
+ *             $ref: '#/components/schemas/UpdateProjectRequest'
  *     responses:
  *       200:
  *         description: Project updated successfully
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Project'
+ *               $ref: '#/components/schemas/ProjectResponse'
  *       404:
  *         description: Project not found
  *       500:
@@ -273,9 +319,12 @@ export const fetchProjectById = asyncHandler(
  */
 export const updateProjectDetails = asyncHandler(
   async (req: Request, res: Response) => {
+    const projectId = req.params.id
+    const updateData = req.body as IUpdateProjectRequest
+
     const updatedProject = await projectService.editProject(
-      req.params.id,
-      req.body
+      projectId,
+      updateData
     )
 
     if (!updatedProject) {
@@ -302,14 +351,17 @@ export const updateProjectDetails = asyncHandler(
  *     responses:
  *       204:
  *         description: Project deleted successfully
- *       500:
- *         description: Internal server error
  *       404:
  *         description: Project not found
+ *       500:
+ *         description: Internal server error
  */
 export const deleteProject = asyncHandler(
-  async (req: Request, res: Response) => {
-    await projectService.deleteProject(req.params.id, req.user?.uid || "")
+  async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user || !req.user.uid) {
+      throw new UnauthorizedError()
+    }
+    await projectService.deleteProject(req.params.id, req.user.uid)
     res.status(204).send()
   }
 )

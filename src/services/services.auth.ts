@@ -8,6 +8,8 @@ export const userLogin = async ({
   photoURL,
   phoneNumber,
   uid,
+  refreshToken,
+  accessToken,
 }: ILoginRequest) => {
   const user = await prisma.user.findUnique({
     where: {
@@ -15,7 +17,11 @@ export const userLogin = async ({
     },
   })
   if (user) {
-    throw new ConflictError("User already exists")
+    return {
+      user,
+      refreshToken,
+      accessToken,
+    }
   }
   const newUser = await prisma.user.create({
     data: {
@@ -28,7 +34,11 @@ export const userLogin = async ({
       id: uid,
     },
   })
-  return newUser
+  return {
+    user: newUser,
+    refreshToken,
+    accessToken,
+  }
 }
 
 export const refreshToken = async (refreshToken: string) => {
@@ -58,10 +68,8 @@ export const refreshToken = async (refreshToken: string) => {
       throw new UnauthorizedError(data.error.message || "Invalid refresh token")
     }
 
-    // Return the new ID token (access token) to the client
     return {
       accessToken: data.id_token,
-      // Optionally return the new refresh token if it was rotated
       refreshToken: data.refresh_token,
     }
   } catch (error) {

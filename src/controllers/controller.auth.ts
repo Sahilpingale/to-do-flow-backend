@@ -24,6 +24,12 @@ import { UnauthorizedError } from "../utils/errors"
  *         uid:
  *           type: string
  *           description: User's unique identifier
+ *         refreshToken:
+ *           type: string
+ *           description: Refresh token
+ *         accessToken:
+ *           type: string
+ *           description: Access token
  *       required:
  *         - email
  *         - displayName
@@ -41,6 +47,8 @@ export interface ILoginRequest {
   photoURL?: string
   phoneNumber?: string
   uid: string
+  refreshToken?: string
+  accessToken?: string
 }
 
 /**
@@ -64,6 +72,9 @@ export interface ILoginRequest {
  *           type: string
  *           format: date-time
  *           description: Account last update timestamp
+ *         accessToken:
+ *           type: string
+ *           description: Access token
  *       required:
  *         - id
  *         - email
@@ -80,11 +91,27 @@ interface ILoginResponse {
   email: string
   createdAt: Date
   updatedAt: Date
+  accessToken?: string
 }
 
 export type LoginRequest = Request<{}, {}, ILoginRequest>
 export type LoginResponse = Response<ILoginResponse | { error: string }>
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     ErrorResponse:
+ *       type: object
+ *       properties:
+ *         error:
+ *           type: string
+ *           description: Error message
+ *       required:
+ *         - error
+ *       example:
+ *         error: "An error occurred during processing"
+ */
 /**
  * @swagger
  * /auth/login:
@@ -113,15 +140,39 @@ export type LoginResponse = Response<ILoginResponse | { error: string }>
  */
 export const login = async (req: LoginRequest, res: LoginResponse) => {
   try {
-    const { email, displayName, photoURL, phoneNumber, uid } = req.body
-    const user = await authService.userLogin({
+    const {
       email,
       displayName,
       photoURL,
       phoneNumber,
       uid,
+      refreshToken,
+      accessToken,
+    } = req.body
+    const {
+      user,
+      refreshToken: refreshTokenToSet,
+      accessToken: accessTokenToSet,
+    } = await authService.userLogin({
+      email,
+      displayName,
+      photoURL,
+      phoneNumber,
+      uid,
+      refreshToken,
+      accessToken,
     })
-    res.status(201).json(user)
+
+    // Set the cookie first
+    res.cookie("refreshToken", refreshTokenToSet, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    })
+
+    // Then send the JSON response
+    res.status(201).json({ ...user, accessToken: accessTokenToSet })
   } catch (error) {
     res.status(500).json({ error: (error as Error).message })
   }
@@ -132,7 +183,7 @@ export const login = async (req: LoginRequest, res: LoginResponse) => {
  * /auth/refresh-token:
  *   post:
  *     summary: Refresh access token using refresh token from HTTP-only cookie
- *     tags: [Auth]
+ *     tags: [Authentication]
  *     responses:
  *       200:
  *         description: Successfully refreshed token
@@ -144,8 +195,21 @@ export const login = async (req: LoginRequest, res: LoginResponse) => {
  *                 accessToken:
  *                   type: string
  *                   description: New access token
+ *                 refreshToken:
+ *                   type: string
+ *                   description: New refresh token (if rotated)
  *       401:
  *         description: Invalid or expired refresh token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 export const refreshTokenHandler = async (
   req: Request,
@@ -153,14 +217,14 @@ export const refreshTokenHandler = async (
   next: NextFunction
 ) => {
   try {
-    // const refreshToken = req.cookies.refreshToken
+    const refreshToken = req.cookies.refreshToken
 
-    // if (!refreshToken) {
-    //   throw new UnauthorizedError("Refresh token not found")
-    // }
+    if (!refreshToken) {
+      throw new UnauthorizedError("Refresh token not found")
+    }
 
-    const refreshToken =
-      "AMf-vBx1gdFVCyajslGDZkUBAVYH-PS6yZ48zgVZvsdTG3FcFjxL-EyANjOTs-yfvDcoWDFBs7SJd3HHe8KqpAE54ifQbLrlH_YyxWR-RZkOdeIZUzAAh2to0S3Zf4_NO6fJYtnUl3PRXKJEeX1NBb0rxo8zc5iY31WrIpu4lDokq-vxfJisj2FltTAt5pRAyWJzs21eiLur9abjAHb8lC90kVsE4m-6knY8sAC5iyghk4CCIxxfyjCutaeyeCtTQnEZ49Ywc17C1a44ZbuHkLgS9bn0ts3Y14TVC2fcEcHKrcpjPcgqXMyq8LIRt16eeyhuvI7AdmHC2wtV7xyU2Xih8uoU4zJraVmfY0Xnj03pXQlXzMSBTxYt9UNwzBmpW4oD_2HWmLOV3DOMra8JVHxiAS9848LOfr-HmUjuLANRWY7bkvLG5HI"
+    // const refreshToken =
+    //   "AMf-vBx1gdFVCyajslGDZkUBAVYH-PS6yZ48zgVZvsdTG3FcFjxL-EyANjOTs-yfvDcoWDFBs7SJd3HHe8KqpAE54ifQbLrlH_YyxWR-RZkOdeIZUzAAh2to0S3Zf4_NO6fJYtnUl3PRXKJEeX1NBb0rxo8zc5iY31WrIpu4lDokq-vxfJisj2FltTAt5pRAyWJzs21eiLur9abjAHb8lC90kVsE4m-6knY8sAC5iyghk4CCIxxfyjCutaeyeCtTQnEZ49Ywc17C1a44ZbuHkLgS9bn0ts3Y14TVC2fcEcHKrcpjPcgqXMyq8LIRt16eeyhuvI7AdmHC2wtV7xyU2Xih8uoU4zJraVmfY0Xnj03pXQlXzMSBTxYt9UNwzBmpW4oD_2HWmLOV3DOMra8JVHxiAS9848LOfr-HmUjuLANRWY7bkvLG5HI"
 
     const { accessToken, refreshToken: newRefreshToken } =
       await authService.refreshToken(refreshToken)
@@ -180,4 +244,36 @@ export const refreshTokenHandler = async (
   } catch (error) {
     next(error)
   }
+}
+
+/**
+ * @swagger
+ * /auth/logout:
+ *   post:
+ *     summary: Logout a user
+ *     tags: [Authentication]
+ *     responses:
+ *       200:
+ *         description: Successfully logged out
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Logout message
+ *               example:
+ *                 message: "Logged out successfully"
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *
+ */
+export const logout = async (req: Request, res: Response) => {
+  res.clearCookie("refreshToken")
+  res.status(200).json({ message: "Logged out successfully" })
 }

@@ -14,7 +14,9 @@
     "/auth/login": {
       "post": {
         "summary": "Login or register a user",
-        "tags": ["Authentication"],
+        "tags": [
+          "Authentication"
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -52,7 +54,9 @@
     "/auth/refresh-token": {
       "post": {
         "summary": "Refresh access token using refresh token from HTTP-only cookie",
-        "tags": ["Auth"],
+        "tags": [
+          "Authentication"
+        ],
         "responses": {
           "200": {
             "description": "Successfully refreshed token",
@@ -64,6 +68,10 @@
                     "accessToken": {
                       "type": "string",
                       "description": "New access token"
+                    },
+                    "refreshToken": {
+                      "type": "string",
+                      "description": "New refresh token (if rotated)"
                     }
                   }
                 }
@@ -71,7 +79,63 @@
             }
           },
           "401": {
-            "description": "Invalid or expired refresh token"
+            "description": "Invalid or expired refresh token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "summary": "Logout a user",
+        "tags": [
+          "Authentication"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully logged out",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Logout message"
+                    }
+                  },
+                  "example": {
+                    "message": "Logged out successfully"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -80,19 +144,15 @@
       "post": {
         "summary": "Create a new project",
         "description": "Creates a new project with the given name.",
-        "tags": ["Projects"],
+        "tags": [
+          "Projects"
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "type": "string",
-                    "description": "Name of the project"
-                  }
-                }
+                "$ref": "#/components/schemas/CreateProjectRequest"
               }
             }
           }
@@ -103,10 +163,13 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Project"
+                  "$ref": "#/components/schemas/ProjectResponse"
                 }
               }
             }
+          },
+          "401": {
+            "description": "Unauthorized - User not authenticated"
           },
           "500": {
             "description": "Internal server error"
@@ -115,8 +178,10 @@
       },
       "get": {
         "summary": "Get all projects",
-        "description": "Retrieves a list of all projects with their associated nodes and edges.",
-        "tags": ["Projects"],
+        "description": "Retrieves a list of all projects for the authenticated user.",
+        "tags": [
+          "Projects"
+        ],
         "responses": {
           "200": {
             "description": "A list of projects",
@@ -125,11 +190,14 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Project"
+                    "$ref": "#/components/schemas/ProjectResponse"
                   }
                 }
               }
             }
+          },
+          "401": {
+            "description": "Unauthorized - User not authenticated"
           },
           "500": {
             "description": "Internal server error"
@@ -141,7 +209,9 @@
       "get": {
         "summary": "Get a project by ID",
         "description": "Retrieves a project with its nodes and edges by ID.",
-        "tags": ["Projects"],
+        "tags": [
+          "Projects"
+        ],
         "parameters": [
           {
             "in": "path",
@@ -159,7 +229,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Project"
+                  "$ref": "#/components/schemas/ProjectResponse"
                 }
               }
             }
@@ -175,7 +245,9 @@
       "patch": {
         "summary": "Edit a project",
         "description": "Updates a project's nodes and edges.",
-        "tags": ["Projects"],
+        "tags": [
+          "Projects"
+        ],
         "parameters": [
           {
             "in": "path",
@@ -192,88 +264,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "nodesToUpdate": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "data": {
-                          "type": "object"
-                        },
-                        "position": {
-                          "type": "object"
-                        },
-                        "type": {
-                          "type": "string"
-                        }
-                      }
-                    }
-                  },
-                  "nodesToAdd": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "data": {
-                          "type": "object"
-                        },
-                        "position": {
-                          "type": "object"
-                        },
-                        "type": {
-                          "type": "string"
-                        }
-                      }
-                    }
-                  },
-                  "nodesToRemove": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        }
-                      }
-                    }
-                  },
-                  "edgesToAdd": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "source": {
-                          "type": "string"
-                        },
-                        "target": {
-                          "type": "string"
-                        }
-                      }
-                    }
-                  },
-                  "edgesToRemove": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        }
-                      }
-                    }
-                  }
-                }
+                "$ref": "#/components/schemas/UpdateProjectRequest"
               }
             }
           }
@@ -284,7 +275,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Project"
+                  "$ref": "#/components/schemas/ProjectResponse"
                 }
               }
             }
@@ -300,7 +291,9 @@
       "delete": {
         "summary": "Delete a project",
         "description": "Deletes a project by ID.",
-        "tags": ["Projects"],
+        "tags": [
+          "Projects"
+        ],
         "parameters": [
           {
             "in": "path",
@@ -349,9 +342,21 @@
           "uid": {
             "type": "string",
             "description": "User's unique identifier"
+          },
+          "refreshToken": {
+            "type": "string",
+            "description": "Refresh token"
+          },
+          "accessToken": {
+            "type": "string",
+            "description": "Access token"
           }
         },
-        "required": ["email", "displayName", "uid"],
+        "required": [
+          "email",
+          "displayName",
+          "uid"
+        ],
         "example": {
           "email": "user@example.com",
           "displayName": "John Doe",
@@ -380,9 +385,18 @@
             "type": "string",
             "format": "date-time",
             "description": "Account last update timestamp"
+          },
+          "accessToken": {
+            "type": "string",
+            "description": "Access token"
           }
         },
-        "required": ["id", "email", "createdAt", "updatedAt"],
+        "required": [
+          "id",
+          "email",
+          "createdAt",
+          "updatedAt"
+        ],
         "example": {
           "id": "12345",
           "email": "user@example.com",
@@ -390,13 +404,34 @@
           "updatedAt": "2023-01-01T00:00:00.000Z"
         }
       },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Error message"
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "example": {
+          "error": "An error occurred during processing"
+        }
+      },
       "NodeType": {
         "type": "string",
-        "enum": ["TASK"]
+        "enum": [
+          "TASK"
+        ]
       },
       "TaskStatus": {
         "type": "string",
-        "enum": ["TODO", "IN_PROGRESS", "DONE"]
+        "enum": [
+          "TODO",
+          "IN_PROGRESS",
+          "DONE"
+        ]
       },
       "Project": {
         "type": "object",
@@ -490,6 +525,99 @@
           },
           "reconnectable": {
             "type": "boolean"
+          }
+        }
+      },
+      "CreateProjectRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the project"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "example": {
+          "name": "My New Project"
+        }
+      },
+      "ProjectResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the project"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the project"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "nodes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TaskNode"
+            }
+          },
+          "edges": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TaskEdge"
+            }
+          }
+        }
+      },
+      "UpdateProjectRequest": {
+        "type": "object",
+        "properties": {
+          "nodesToUpdate": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TaskNode"
+            }
+          },
+          "nodesToAdd": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TaskNode"
+            }
+          },
+          "nodesToRemove": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "edgesToAdd": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TaskEdge"
+            }
+          },
+          "edgesToRemove": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              }
+            }
           }
         }
       }
