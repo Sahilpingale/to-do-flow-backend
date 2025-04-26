@@ -4,6 +4,10 @@ import { Request } from "../types/authTypes"
 import { UnauthorizedError } from "../utils/errors"
 import { asyncHandler } from "../utils/asyncHandler"
 
+console.log("firebase", process.env.FIREBASE_PROJECT_ID)
+console.log("firebase", process.env.FIREBASE_CLIENT_EMAIL)
+console.log("firebase", process.env.FIREBASE_PRIVATE_KEY)
+
 try {
   admin.initializeApp({
     credential: admin.credential.cert({
