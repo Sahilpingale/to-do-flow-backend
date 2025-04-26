@@ -84,6 +84,7 @@ export const getProjectById = async (
 export const editProject = async (
   id: string,
   data: {
+    name?: string
     nodesToUpdate?: Pick<TaskNode, "data" | "position" | "id" | "type">[]
     nodesToAdd?: Pick<TaskNode, "data" | "position" | "id" | "type">[]
     nodesToRemove?: Pick<TaskNode, "id">[]
@@ -218,6 +219,7 @@ export const editProject = async (
   const updatedProject = await prisma.project.update({
     where: { id },
     data: {
+      name: data.name,
       edges: {
         upsert: edgesToAdd,
         delete: edgesToRemove,

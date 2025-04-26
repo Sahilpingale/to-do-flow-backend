@@ -118,6 +118,8 @@ import { NotFoundError, UnauthorizedError } from "../utils/errors"
  *           type: array
  *           items:
  *             $ref: '#/components/schemas/TaskNode'
+ *         name:
+ *           type: string
  *         nodesToAdd:
  *           type: array
  *           items:
@@ -148,6 +150,7 @@ export interface ICreateProjectRequest {
 }
 
 export interface IUpdateProjectRequest {
+  name?: string
   nodesToUpdate?: any[]
   nodesToAdd?: any[]
   nodesToRemove?: any[]

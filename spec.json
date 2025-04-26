@@ -585,6 +585,9 @@
               "$ref": "#/components/schemas/TaskNode"
             }
           },
+          "name": {
+            "type": "string"
+          },
           "nodesToAdd": {
             "type": "array",
             "items": {
