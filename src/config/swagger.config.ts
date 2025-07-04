@@ -14,7 +14,7 @@ const options = {
       },
     ],
   },
-  apis: ["./src/routes/*.ts", "./src/controllers/*.ts"], // Specify paths to your route files for annotations
+  apis: ["./src/routes/*.ts", "./src/controllers/*.ts"],
 }
 
 export const swaggerSpec = swaggerJsDoc(options)
