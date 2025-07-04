@@ -21,6 +21,8 @@ COPY . .
 
 RUN npm run build
 
+RUN npm run generate-swagger
+
 # Stage 3: Production Stage
 FROM base AS production
 
@@ -31,6 +33,7 @@ WORKDIR /app
 COPY package*.json ./
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/spec.json ./spec.json
 
 # Install production dependencies only
 RUN npm ci --only=production
