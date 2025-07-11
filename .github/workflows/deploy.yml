@@ -30,8 +30,11 @@ jobs:
 
       - name: Create env file and deploy
         run: |
+          # Connect to EC2 instance and run commands
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.AWS_EC2_USERNAME }}@${{ secrets.AWS_EC2_HOST }} '
             cd /home/${{ secrets.AWS_EC2_USERNAME }}/app && \
+
+            # Create env file
             echo "NODE_ENV=production" > .env.production && \
             echo "PORT=${{ secrets.PORT }}" >> .env.production && \
             echo "FRONTEND_URL=${{ secrets.FRONTEND_URL }}" >> .env.production && \
@@ -41,12 +44,16 @@ jobs:
             echo "FIREBASE_PRIVATE_KEY='${{ secrets.FIREBASE_PRIVATE_KEY }}'" >> .env.production && \
             echo "BACKEND_URL=${{ secrets.BACKEND_URL }}" >> .env.production && \
             echo "FIREBASE_API_KEY=${{ secrets.FIREBASE_API_KEY }}" >> .env.production && \
+
+            # Pull and run docker containers
             docker compose --env-file .env.production pull && \
             docker compose --env-file .env.production up -d --build app-production db-production && \
             until docker compose --env-file .env.production exec -T db-production pg_isready -U postgres; do
               echo 'Waiting for database to be ready...'
               sleep 2
             done && \
+            
+            # Run database migrations inside the production container
             docker compose --env-file .env.production exec -T app-production npx prisma migrate deploy && \
             docker system prune -f
           '

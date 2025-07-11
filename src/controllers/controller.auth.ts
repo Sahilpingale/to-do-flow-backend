@@ -220,7 +220,7 @@ export const refreshTokenHandler = async (
     const refreshToken = req.cookies.refreshToken
 
     if (!refreshToken) {
-      throw new UnauthorizedError("Refresh token not found")
+      throw new UnauthorizedError("Refresh token not found") // This is a 401 error. Would this cause the system to go into an infinite loop?
     }
 
     // const refreshToken =

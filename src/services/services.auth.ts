@@ -65,7 +65,7 @@ export const refreshToken = async (refreshToken: string) => {
 
     if (data.error) {
       console.error("Firebase refresh token error:", data.error)
-      throw new UnauthorizedError(data.error.message || "Invalid refresh token")
+      throw new UnauthorizedError(data.error.message || "Invalid refresh token") // This is a 401 error. Would this cause the system to go into an infinite loop?
     }
 
     return {
@@ -74,6 +74,6 @@ export const refreshToken = async (refreshToken: string) => {
     }
   } catch (error) {
     console.error("Refresh token error:", error)
-    throw new UnauthorizedError("Invalid or expired refresh token")
+    throw new UnauthorizedError("Invalid or expired refresh token") // This is a 401 error. Would this cause the system to go into an infinite loop?
   }
 }
