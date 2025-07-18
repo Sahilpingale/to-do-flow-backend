@@ -6,7 +6,7 @@ import { UnauthorizedError } from "../utils/errors"
  * @swagger
  * components:
  *   schemas:
- *     LoginRequest:
+ *     ILoginRequest:
  *       type: object
  *       properties:
  *         email:
@@ -55,7 +55,7 @@ export interface ILoginRequest {
  * @swagger
  * components:
  *   schemas:
- *     LoginResponse:
+ *     ILoginResponse:
  *       type: object
  *       properties:
  *         id:
@@ -94,14 +94,14 @@ interface ILoginResponse {
   accessToken?: string
 }
 
-export type LoginRequest = Request<{}, {}, ILoginRequest>
+export type LoginRequest = Request<{}, ILoginResponse, ILoginRequest>
 export type LoginResponse = Response<ILoginResponse | { error: string }>
 
 /**
  * @swagger
  * components:
  *   schemas:
- *     ErrorResponse:
+ *     IErrorResponse:
  *       type: object
  *       properties:
  *         error:
@@ -123,20 +123,20 @@ export type LoginResponse = Response<ILoginResponse | { error: string }>
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/LoginRequest'
+ *             $ref: '#/components/schemas/ILoginRequest'
  *     responses:
  *       201:
  *         description: User logged in successfully
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/LoginResponse'
+ *               $ref: '#/components/schemas/ILoginResponse'
  *       500:
  *         description: Server error
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *               $ref: '#/components/schemas/IErrorResponse'
  */
 export const login = async (req: LoginRequest, res: LoginResponse) => {
   try {
@@ -203,13 +203,13 @@ export const login = async (req: LoginRequest, res: LoginResponse) => {
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *               $ref: '#/components/schemas/IErrorResponse'
  *       500:
  *         description: Server error
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *               $ref: '#/components/schemas/IErrorResponse'
  */
 export const refreshTokenHandler = async (
   req: Request,
@@ -270,7 +270,7 @@ export const refreshTokenHandler = async (
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *               $ref: '#/components/schemas/IErrorResponse'
  *
  */
 export const logout = async (req: Request, res: Response) => {

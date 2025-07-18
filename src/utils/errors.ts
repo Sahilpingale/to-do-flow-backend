@@ -1,5 +1,22 @@
 import { StatusCodes } from "http-status-codes"
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     AppError:
+ *       type: object
+ *       properties:
+ *         message:
+ *           type: string
+ *           description: The error message
+ *         statusCode:
+ *           type: integer
+ *           description: HTTP status code
+ *         isOperational:
+ *           type: boolean
+ *           description: Whether the error is operational
+ */
 export class AppError extends Error {
   statusCode: number
   isOperational: boolean
@@ -16,7 +33,7 @@ export class AppError extends Error {
  * @swagger
  * components:
  *   schemas:
- *     ErrorResponse:
+ *     IErrorResponse:
  *       type: object
  *       properties:
  *         error:
@@ -39,7 +56,7 @@ export class AppError extends Error {
  *   schemas:
  *     BadRequestError:
  *       allOf:
- *         - $ref: '#/components/schemas/ErrorResponse'
+ *         - $ref: '#/components/schemas/IErrorResponse'
  *       example:
  *         error: "Bad request"
  *         statusCode: 400
@@ -56,7 +73,7 @@ export class BadRequestError extends AppError {
  *   schemas:
  *     UnauthorizedError:
  *       allOf:
- *         - $ref: '#/components/schemas/ErrorResponse'
+ *         - $ref: '#/components/schemas/IErrorResponse'
  *       example:
  *         error: "Unauthorized: User not authenticated"
  *         statusCode: 401
@@ -73,7 +90,7 @@ export class UnauthorizedError extends AppError {
  *   schemas:
  *     ForbiddenError:
  *       allOf:
- *         - $ref: '#/components/schemas/ErrorResponse'
+ *         - $ref: '#/components/schemas/IErrorResponse'
  *       example:
  *         error: "Forbidden: User does not have access"
  *         statusCode: 403
@@ -90,7 +107,7 @@ export class ForbiddenError extends AppError {
  *   schemas:
  *     NotFoundError:
  *       allOf:
- *         - $ref: '#/components/schemas/ErrorResponse'
+ *         - $ref: '#/components/schemas/IErrorResponse'
  *       example:
  *         error: "Resource not found"
  *         statusCode: 404
@@ -124,7 +141,7 @@ export class ConflictError extends AppError {
  *   schemas:
  *     InternalServerError:
  *       allOf:
- *         - $ref: '#/components/schemas/ErrorResponse'
+ *         - $ref: '#/components/schemas/IErrorResponse'
  *       example:
  *         error: "Internal server error"
  *         statusCode: 500

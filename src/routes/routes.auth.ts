@@ -7,4 +7,4 @@ authRoutes.post("/login", authController.login)
 authRoutes.post("/refresh-token", authController.refreshTokenHandler)
 authRoutes.post("/logout", authController.logout)
 
-export default authRoutes
+export { authRoutes }

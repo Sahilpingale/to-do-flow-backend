@@ -32,3 +32,31 @@ export interface TaskNode {
   }
   type: NodeType
 }
+
+export interface ICreateProjectRequest {
+  name: string
+}
+
+export interface IUpdateProjectRequest {
+  name?: string
+  nodesToUpdate?: TaskNode[]
+  nodesToAdd?: TaskNode[]
+  nodesToRemove?: Pick<TaskNode, "id">[]
+  edgesToAdd?: TaskEdge[]
+  edgesToRemove?: Pick<TaskEdge, "id">[]
+}
+
+export interface IGenerateTaskSuggestionsRequest {
+  projectId: string
+  query: string
+  associatedNodes: TaskNode[]
+}
+
+export interface IProjectResponse extends IProject {}
+
+export interface IProjectListResponse extends Array<IProject> {}
+
+export interface AuthenticatedUser {
+  uid: string
+  [key: string]: string | number | boolean | undefined
+}

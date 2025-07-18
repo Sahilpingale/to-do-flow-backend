@@ -1,12 +1,61 @@
-import { PrismaClient, TaskEdge } from "@prisma/client"
+import {
+  PrismaClient,
+  TaskEdge,
+  Project,
+  TaskNode as PrismaTaskNode,
+  TaskEdge as PrismaTaskEdge,
+} from "@prisma/client"
 import { NodeType } from "@prisma/client"
 import { IProject, TaskNode } from "../models/models"
 import { NotFoundError, ConflictError } from "../utils/errors"
 
 const prisma = new PrismaClient()
 
-export const createProject = async (data: { name: string; userId: string }) => {
-  return prisma.project.create({
+// Type for Prisma project data with includes
+type PrismaProjectWithIncludes = Project & {
+  nodes: PrismaTaskNode[]
+  edges: PrismaTaskEdge[]
+}
+
+// Helper function to transform Prisma project data to IProject format
+const transformProjectData = (project: PrismaProjectWithIncludes): IProject => {
+  return {
+    id: project.id,
+    name: project.name,
+    createdAt: project.createdAt,
+    updatedAt: project.updatedAt,
+    nodes:
+      project.nodes?.map((node) => ({
+        id: node.id,
+        data: {
+          title: node.title,
+          description: node.description,
+          status: node.status,
+        },
+        position: {
+          x: node.positionX,
+          y: node.positionY,
+        },
+        type: node.type,
+      })) ?? [],
+    edges:
+      project.edges?.map((edge) => ({
+        id: edge.id,
+        source: edge.source,
+        target: edge.target,
+        type: edge.type,
+        animated: edge.animated,
+        deletable: edge.deletable,
+        reconnectable: edge.reconnectable,
+      })) ?? [],
+  }
+}
+
+export const createProject = async (data: {
+  name: string
+  userId: string
+}): Promise<IProject> => {
+  const project = await prisma.project.create({
     data: {
       name: data.name,
       user: {
@@ -20,10 +69,11 @@ export const createProject = async (data: { name: string; userId: string }) => {
       edges: true,
     },
   })
+  return transformProjectData(project)
 }
 
-export const getProjects = async (userId: string) => {
-  return prisma.project.findMany({
+export const getProjects = async (userId: string): Promise<IProject[]> => {
+  const projects = await prisma.project.findMany({
     where: {
       userId,
     },
@@ -32,6 +82,7 @@ export const getProjects = async (userId: string) => {
       edges: true,
     },
   })
+  return projects.map(transformProjectData)
 }
 
 export const getProjectById = async (
@@ -48,37 +99,7 @@ export const getProjectById = async (
   if (!project) {
     return null
   }
-  const modifiedProjectStructure: IProject = {
-    id: project?.id!,
-    name: project?.name!,
-    createdAt: project?.createdAt!,
-    updatedAt: project?.updatedAt!,
-    nodes:
-      project?.nodes.map((node) => ({
-        id: node.id,
-        data: {
-          title: node.title,
-          description: node.description,
-          status: node.status,
-        },
-        position: {
-          x: node.positionX,
-          y: node.positionY,
-        },
-        type: node.type,
-      })) ?? [],
-    edges:
-      project?.edges.map((edge) => ({
-        id: edge.id,
-        source: edge.source,
-        target: edge.target,
-        type: edge.type,
-        animated: edge.animated,
-        deletable: edge.deletable,
-        reconnectable: edge.reconnectable,
-      })) ?? [],
-  }
-  return modifiedProjectStructure
+  return transformProjectData(project)
 }
 
 export const editProject = async (
@@ -91,7 +112,7 @@ export const editProject = async (
     edgesToAdd?: Pick<TaskEdge, "source" | "target" | "id">[]
     edgesToRemove?: Pick<TaskEdge, "id">[]
   }
-) => {
+): Promise<IProject> => {
   const project = await prisma.project.findUnique({
     where: { id },
   })
@@ -230,17 +251,13 @@ export const editProject = async (
         delete: nodesToRemove,
       },
     },
-    select: {
-      id: true,
-      name: true,
-      edges: true,
+    include: {
       nodes: true,
-      createdAt: true,
-      updatedAt: true,
+      edges: true,
     },
   })
 
-  return updatedProject
+  return transformProjectData(updatedProject)
 }
 
 export const deleteProject = async (id: string, userId: string) => {

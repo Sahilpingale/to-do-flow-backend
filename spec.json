@@ -1,26 +1,28 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "To-Do Flow API",
+    "title": "Your API Name",
     "version": "1.0.0",
-    "description": "API Documentation for To-Do Flow Backend"
+    "description": "API Documentation"
   },
   "servers": [
     {
-      "url": "https://api.to-do-flow.bytetales.co.in"
+      "url": ""
     }
   ],
   "paths": {
     "/auth/login": {
       "post": {
         "summary": "Login or register a user",
-        "tags": ["Authentication"],
+        "tags": [
+          "Authentication"
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/LoginRequest"
+                "$ref": "#/components/schemas/ILoginRequest"
               }
             }
           }
@@ -31,7 +33,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/LoginResponse"
+                  "$ref": "#/components/schemas/ILoginResponse"
                 }
               }
             }
@@ -41,7 +43,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/IErrorResponse"
                 }
               }
             }
@@ -52,7 +54,9 @@
     "/auth/refresh-token": {
       "post": {
         "summary": "Refresh access token using refresh token from HTTP-only cookie",
-        "tags": ["Authentication"],
+        "tags": [
+          "Authentication"
+        ],
         "responses": {
           "200": {
             "description": "Successfully refreshed token",
@@ -79,7 +83,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/IErrorResponse"
                 }
               }
             }
@@ -89,7 +93,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/IErrorResponse"
                 }
               }
             }
@@ -100,7 +104,9 @@
     "/auth/logout": {
       "post": {
         "summary": "Logout a user",
-        "tags": ["Authentication"],
+        "tags": [
+          "Authentication"
+        ],
         "responses": {
           "200": {
             "description": "Successfully logged out",
@@ -126,7 +132,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/IErrorResponse"
                 }
               }
             }
@@ -138,13 +144,15 @@
       "post": {
         "summary": "Create a new project",
         "description": "Creates a new project with the given name.",
-        "tags": ["Projects"],
+        "tags": [
+          "Projects"
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateProjectRequest"
+                "$ref": "#/components/schemas/ICreateProjectRequest"
               }
             }
           }
@@ -155,7 +163,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProjectResponse"
+                  "$ref": "#/components/schemas/IProjectResponse"
                 }
               }
             }
@@ -171,7 +179,9 @@
       "get": {
         "summary": "Get all projects",
         "description": "Retrieves a list of all projects for the authenticated user.",
-        "tags": ["Projects"],
+        "tags": [
+          "Projects"
+        ],
         "responses": {
           "200": {
             "description": "A list of projects",
@@ -180,7 +190,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/ProjectResponse"
+                    "$ref": "#/components/schemas/IProjectResponse"
                   }
                 }
               }
@@ -199,7 +209,9 @@
       "get": {
         "summary": "Get a project by ID",
         "description": "Retrieves a project with its nodes and edges by ID.",
-        "tags": ["Projects"],
+        "tags": [
+          "Projects"
+        ],
         "parameters": [
           {
             "in": "path",
@@ -217,7 +229,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProjectResponse"
+                  "$ref": "#/components/schemas/IProjectResponse"
                 }
               }
             }
@@ -233,7 +245,9 @@
       "patch": {
         "summary": "Edit a project",
         "description": "Updates a project's nodes and edges.",
-        "tags": ["Projects"],
+        "tags": [
+          "Projects"
+        ],
         "parameters": [
           {
             "in": "path",
@@ -250,7 +264,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateProjectRequest"
+                "$ref": "#/components/schemas/IUpdateProjectRequest"
               }
             }
           }
@@ -261,7 +275,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProjectResponse"
+                  "$ref": "#/components/schemas/IProjectResponse"
                 }
               }
             }
@@ -277,7 +291,9 @@
       "delete": {
         "summary": "Delete a project",
         "description": "Deletes a project by ID.",
-        "tags": ["Projects"],
+        "tags": [
+          "Projects"
+        ],
         "parameters": [
           {
             "in": "path",
@@ -304,7 +320,7 @@
   },
   "components": {
     "schemas": {
-      "LoginRequest": {
+      "ILoginRequest": {
         "type": "object",
         "properties": {
           "email": {
@@ -336,7 +352,11 @@
             "description": "Access token"
           }
         },
-        "required": ["email", "displayName", "uid"],
+        "required": [
+          "email",
+          "displayName",
+          "uid"
+        ],
         "example": {
           "email": "user@example.com",
           "displayName": "John Doe",
@@ -345,7 +365,7 @@
           "uid": "user123"
         }
       },
-      "LoginResponse": {
+      "ILoginResponse": {
         "type": "object",
         "properties": {
           "id": {
@@ -371,7 +391,12 @@
             "description": "Access token"
           }
         },
-        "required": ["id", "email", "createdAt", "updatedAt"],
+        "required": [
+          "id",
+          "email",
+          "createdAt",
+          "updatedAt"
+        ],
         "example": {
           "id": "12345",
           "email": "user@example.com",
@@ -379,7 +404,7 @@
           "updatedAt": "2023-01-01T00:00:00.000Z"
         }
       },
-      "ErrorResponse": {
+      "IErrorResponse": {
         "type": "object",
         "properties": {
           "error": {
@@ -387,20 +412,28 @@
             "description": "Error message"
           }
         },
-        "required": ["error"],
+        "required": [
+          "error"
+        ],
         "example": {
           "error": "An error occurred during processing"
         }
       },
-      "NodeType": {
+      "INodeType": {
         "type": "string",
-        "enum": ["TASK"]
+        "enum": [
+          "TASK"
+        ]
       },
-      "TaskStatus": {
+      "ITaskStatus": {
         "type": "string",
-        "enum": ["TODO", "IN_PROGRESS", "DONE"]
+        "enum": [
+          "TODO",
+          "IN_PROGRESS",
+          "DONE"
+        ]
       },
-      "Project": {
+      "IProject": {
         "type": "object",
         "properties": {
           "id": {
@@ -422,18 +455,18 @@
           "nodes": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/TaskNode"
+              "$ref": "#/components/schemas/ITaskNode"
             }
           },
           "edges": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/TaskEdge"
+              "$ref": "#/components/schemas/ITaskEdge"
             }
           }
         }
       },
-      "TaskNode": {
+      "ITaskNode": {
         "type": "object",
         "properties": {
           "id": {
@@ -449,7 +482,7 @@
                 "type": "string"
               },
               "status": {
-                "$ref": "#/components/schemas/TaskStatus"
+                "$ref": "#/components/schemas/ITaskStatus"
               }
             }
           },
@@ -465,11 +498,11 @@
             }
           },
           "type": {
-            "$ref": "#/components/schemas/NodeType"
+            "$ref": "#/components/schemas/INodeType"
           }
         }
       },
-      "TaskEdge": {
+      "ITaskEdge": {
         "type": "object",
         "properties": {
           "id": {
@@ -482,7 +515,7 @@
             "type": "string"
           },
           "type": {
-            "$ref": "#/components/schemas/NodeType"
+            "$ref": "#/components/schemas/INodeType"
           },
           "animated": {
             "type": "boolean"
@@ -495,7 +528,7 @@
           }
         }
       },
-      "CreateProjectRequest": {
+      "ICreateProjectRequest": {
         "type": "object",
         "properties": {
           "name": {
@@ -503,12 +536,14 @@
             "description": "Name of the project"
           }
         },
-        "required": ["name"],
+        "required": [
+          "name"
+        ],
         "example": {
           "name": "My New Project"
         }
       },
-      "ProjectResponse": {
+      "IProjectResponse": {
         "type": "object",
         "properties": {
           "id": {
@@ -530,24 +565,24 @@
           "nodes": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/TaskNode"
+              "$ref": "#/components/schemas/ITaskNode"
             }
           },
           "edges": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/TaskEdge"
+              "$ref": "#/components/schemas/ITaskEdge"
             }
           }
         }
       },
-      "UpdateProjectRequest": {
+      "IUpdateProjectRequest": {
         "type": "object",
         "properties": {
           "nodesToUpdate": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/TaskNode"
+              "$ref": "#/components/schemas/ITaskNode"
             }
           },
           "name": {
@@ -556,7 +591,7 @@
           "nodesToAdd": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/TaskNode"
+              "$ref": "#/components/schemas/ITaskNode"
             }
           },
           "nodesToRemove": {
@@ -573,7 +608,7 @@
           "edgesToAdd": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/TaskEdge"
+              "$ref": "#/components/schemas/ITaskEdge"
             }
           },
           "edgesToRemove": {

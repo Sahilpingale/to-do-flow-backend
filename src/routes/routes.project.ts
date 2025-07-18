@@ -18,4 +18,4 @@ projectRoutes.get("/:id", fetchProjectById)
 projectRoutes.patch("/:id", updateProjectDetails)
 projectRoutes.delete("/:id", deleteProject)
 
-export default projectRoutes
+export { projectRoutes }

@@ -3,17 +3,26 @@ import * as projectService from "../services/services.project"
 import { Request } from "express"
 import { asyncHandler } from "../utils/asyncHandler"
 import { NotFoundError, UnauthorizedError } from "../utils/errors"
+import {
+  ICreateProjectRequest,
+  IUpdateProjectRequest,
+  IProjectResponse,
+  IProjectListResponse,
+  AuthenticatedUser,
+} from "../models/models"
 /**
  * @swagger
  * components:
  *   schemas:
- *     NodeType:
+ *     INodeType:
  *       type: string
  *       enum: [TASK]
- *     TaskStatus:
+ *
+ *     ITaskStatus:
  *       type: string
  *       enum: [TODO, IN_PROGRESS, DONE]
- *     Project:
+ *
+ *     IProject:
  *       type: object
  *       properties:
  *         id:
@@ -31,12 +40,13 @@ import { NotFoundError, UnauthorizedError } from "../utils/errors"
  *         nodes:
  *           type: array
  *           items:
- *             $ref: '#/components/schemas/TaskNode'
+ *             $ref: '#/components/schemas/ITaskNode'
  *         edges:
  *           type: array
  *           items:
- *             $ref: '#/components/schemas/TaskEdge'
- *     TaskNode:
+ *             $ref: '#/components/schemas/ITaskEdge'
+ *
+ *     ITaskNode:
  *       type: object
  *       properties:
  *         id:
@@ -49,7 +59,7 @@ import { NotFoundError, UnauthorizedError } from "../utils/errors"
  *             description:
  *               type: string
  *             status:
- *               $ref: '#/components/schemas/TaskStatus'
+ *               $ref: '#/components/schemas/ITaskStatus'
  *         position:
  *           type: object
  *           properties:
@@ -58,8 +68,9 @@ import { NotFoundError, UnauthorizedError } from "../utils/errors"
  *             y:
  *               type: number
  *         type:
- *           $ref: '#/components/schemas/NodeType'
- *     TaskEdge:
+ *           $ref: '#/components/schemas/INodeType'
+ *
+ *     ITaskEdge:
  *       type: object
  *       properties:
  *         id:
@@ -69,14 +80,15 @@ import { NotFoundError, UnauthorizedError } from "../utils/errors"
  *         target:
  *           type: string
  *         type:
- *           $ref: '#/components/schemas/NodeType'
+ *           $ref: '#/components/schemas/INodeType'
  *         animated:
  *           type: boolean
  *         deletable:
  *           type: boolean
  *         reconnectable:
  *           type: boolean
- *     CreateProjectRequest:
+ *
+ *     ICreateProjectRequest:
  *       type: object
  *       properties:
  *         name:
@@ -87,7 +99,7 @@ import { NotFoundError, UnauthorizedError } from "../utils/errors"
  *       example:
  *         name: "My New Project"
  *
- *     ProjectResponse:
+ *     IProjectResponse:
  *       type: object
  *       properties:
  *         id:
@@ -105,25 +117,25 @@ import { NotFoundError, UnauthorizedError } from "../utils/errors"
  *         nodes:
  *           type: array
  *           items:
- *             $ref: '#/components/schemas/TaskNode'
+ *             $ref: '#/components/schemas/ITaskNode'
  *         edges:
  *           type: array
  *           items:
- *             $ref: '#/components/schemas/TaskEdge'
+ *             $ref: '#/components/schemas/ITaskEdge'
  *
- *     UpdateProjectRequest:
+ *     IUpdateProjectRequest:
  *       type: object
  *       properties:
  *         nodesToUpdate:
  *           type: array
  *           items:
- *             $ref: '#/components/schemas/TaskNode'
+ *             $ref: '#/components/schemas/ITaskNode'
  *         name:
  *           type: string
  *         nodesToAdd:
  *           type: array
  *           items:
- *             $ref: '#/components/schemas/TaskNode'
+ *             $ref: '#/components/schemas/ITaskNode'
  *         nodesToRemove:
  *           type: array
  *           items:
@@ -134,7 +146,7 @@ import { NotFoundError, UnauthorizedError } from "../utils/errors"
  *         edgesToAdd:
  *           type: array
  *           items:
- *             $ref: '#/components/schemas/TaskEdge'
+ *             $ref: '#/components/schemas/ITaskEdge'
  *         edgesToRemove:
  *           type: array
  *           items:
@@ -144,36 +156,21 @@ import { NotFoundError, UnauthorizedError } from "../utils/errors"
  *                 type: string
  */
 
-// Define interface types for requests and responses
-export interface ICreateProjectRequest {
-  name: string
-}
-
-export interface IUpdateProjectRequest {
-  name?: string
-  nodesToUpdate?: any[]
-  nodesToAdd?: any[]
-  nodesToRemove?: any[]
-  edgesToAdd?: any[]
-  edgesToRemove?: any[]
-}
-
-// Define request and response types
-export type CreateProjectRequest = Request<{}, {}, ICreateProjectRequest>
-export type ProjectResponse = Response<any>
-export type ProjectsResponse = Response<any[]>
+export type CreateProjectRequest = Request<
+  {},
+  IProjectResponse,
+  ICreateProjectRequest
+>
+export type ProjectResponse = Response<IProjectResponse>
+export type ProjectsResponseType = Response<IProjectListResponse>
 export type UpdateProjectRequest = Request<
   { id: string },
-  any,
+  IProjectResponse,
   IUpdateProjectRequest
 >
 
-// Add this interface to extend the Express Request
 interface AuthenticatedRequest extends Request {
-  user?: {
-    uid: string
-    [key: string]: any
-  }
+  user?: AuthenticatedUser
 }
 
 /**
@@ -188,14 +185,14 @@ interface AuthenticatedRequest extends Request {
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/CreateProjectRequest'
+ *             $ref: '#/components/schemas/ICreateProjectRequest'
  *     responses:
  *       201:
  *         description: Project created successfully
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ProjectResponse'
+ *               $ref: '#/components/schemas/IProjectResponse'
  *       401:
  *         description: Unauthorized - User not authenticated
  *       500:
@@ -234,14 +231,14 @@ export const createNewProject = asyncHandler(
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/ProjectResponse'
+ *                 $ref: '#/components/schemas/IProjectResponse'
  *       401:
  *         description: Unauthorized - User not authenticated
  *       500:
  *         description: Internal server error
  */
 export const fetchAllProjects = asyncHandler(
-  async (req: AuthenticatedRequest, res: ProjectsResponse) => {
+  async (req: AuthenticatedRequest, res: ProjectsResponseType) => {
     const projects = await projectService.getProjects(req.user?.uid || "")
     res.json(projects)
   }
@@ -267,7 +264,7 @@ export const fetchAllProjects = asyncHandler(
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ProjectResponse'
+ *               $ref: '#/components/schemas/IProjectResponse'
  *       404:
  *         description: Project not found
  *       500:
@@ -307,14 +304,14 @@ export const fetchProjectById = asyncHandler(
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/UpdateProjectRequest'
+ *             $ref: '#/components/schemas/IUpdateProjectRequest'
  *     responses:
  *       200:
  *         description: Project updated successfully
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ProjectResponse'
+ *               $ref: '#/components/schemas/IProjectResponse'
  *       404:
  *         description: Project not found
  *       500:
