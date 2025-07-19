@@ -6,7 +6,7 @@ import {
   TaskEdge as PrismaTaskEdge,
 } from "@prisma/client"
 import { NodeType } from "@prisma/client"
-import { IProject, TaskNode } from "../models/models"
+import { IProject, ITaskEdge, ITaskNode } from "../models/models"
 import { NotFoundError, ConflictError } from "../utils/errors"
 
 const prisma = new PrismaClient()
@@ -106,11 +106,11 @@ export const editProject = async (
   id: string,
   data: {
     name?: string
-    nodesToUpdate?: Pick<TaskNode, "data" | "position" | "id" | "type">[]
-    nodesToAdd?: Pick<TaskNode, "data" | "position" | "id" | "type">[]
-    nodesToRemove?: Pick<TaskNode, "id">[]
-    edgesToAdd?: Pick<TaskEdge, "source" | "target" | "id">[]
-    edgesToRemove?: Pick<TaskEdge, "id">[]
+    nodesToUpdate?: Pick<ITaskNode, "data" | "position" | "id" | "type">[]
+    nodesToAdd?: Pick<ITaskNode, "data" | "position" | "id" | "type">[]
+    nodesToRemove?: Pick<ITaskNode, "id">[]
+    edgesToAdd?: Pick<ITaskEdge, "source" | "target" | "id">[]
+    edgesToRemove?: Pick<ITaskEdge, "id">[]
   }
 ): Promise<IProject> => {
   const project = await prisma.project.findUnique({
